@@ -20,9 +20,9 @@ from rich.logging import RichHandler
 from rich.prompt import IntPrompt, FloatPrompt
 
 # 导入程序模块
-from videobrake.video_analyzer import VideoAnalyzer
-from videobrake.video_processor import VideoProcessor
-from videobrake.common_utils import create_bitrate_levels
+from bitscaculate.video_analyzer import VideoAnalyzer
+from bitscaculate.video_processor import VideoProcessor
+from bitscaculate.common_utils import create_bitrate_levels
 
 # 设置控制台对象
 console = Console()

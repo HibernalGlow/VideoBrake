@@ -35,14 +35,15 @@ dev = [
 "Bug Tracker" = "https://github.com/HibernalGlow/VideoBrake/issues"
 
 [project.scripts]
-videobrake = "videobrake.__main__:main"
-
+bitscaculate = "bitscaculate.__main__:main"
+formatfliter = "formatfliter.core:main"
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["videobrake"]
+package-dir = {"" = "src"}
+packages = ["bitscaculate","formatfliter"]
 
 [tool.black]
 line-length = 88

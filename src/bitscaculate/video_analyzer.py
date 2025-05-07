@@ -21,7 +21,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 # 导入通用工具
-from videobrake.common_utils import (
+from bitscaculate.common_utils import (
     VideoInfo, ProcessResult, create_bitrate_levels, 
     get_bitrate_level, is_video_file, VIDEO_FILE_TYPES
 )
