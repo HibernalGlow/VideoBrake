@@ -26,7 +26,6 @@ def main():
     
     # 默认显示使用信息
     console.print("[bold cyan]VideoBrake - 视频处理工具集[/bold cyan]")
-    console.print("提供统一接口调用各个子包功能")
     console.print("\n可用的工具包:")
     console.print("1. bitscaculate - 视频码率分析与分类工具")
     console.print("   - 命令: bitscaculate")
@@ -43,34 +42,32 @@ def run_demo():
     console.print("[bold cyan]VideoBrake 功能演示[/bold cyan]")
     
     # 创建统一接口实例
-    vb = VideoBrake(bitrate_step=2.0, max_steps=8)
+    vb = VideoBrake()
     
-    # 显示统一接口的功能
-    console.print("\n[green]1. 统一接口提供的功能:[/green]")
-    methods = [method for method in dir(vb) if callable(getattr(vb, method)) and not method.startswith("_")]
-    for method in methods:
-        doc = getattr(vb, method).__doc__
-        if doc:
-            console.print(f"   • {method}: {doc}")
+    # 显示两个主要子包
+    console.print("\n[green]1. 可用的子包:[/green]")
+    console.print("   • bitscaculate: 视频码率分析与分类模块")
+    console.print("   • formatfliter: 视频格式过滤器模块")
     
     # 演示如何使用统一接口
     console.print("\n[green]2. 使用示例:[/green]")
-    console.print("[yellow]# 分析单个视频文件[/yellow]")
-    console.print("video_path = 'path/to/video.mp4'")
-    console.print("video_info = vb.analyze_video(video_path)")
+    console.print("[yellow]# 通过统一接口调用码率分析模块[/yellow]")
+    console.print("from videobrake import VideoBrake")
+    console.print("vb = VideoBrake()")
+    console.print("analyzer = vb.bitscaculate.video_analyzer.VideoAnalyzer()")
+    console.print("processor = vb.bitscaculate.video_processor.VideoProcessor(analyzer)")
+    console.print("result = processor.classify_videos_by_bitrate('path/to/videos')")
     
-    console.print("\n[yellow]# 分析文件夹[/yellow]")
-    console.print("folder_path = 'path/to/videos/'")
-    console.print("result = vb.analyze_folder(folder_path)")
-    console.print("report_path = vb.generate_json_report(result)")
+    console.print("\n[yellow]# 通过统一接口调用格式过滤器模块[/yellow]")
+    console.print("from videobrake import VideoBrake")
+    console.print("vb = VideoBrake()")
+    console.print("vb.formatfliter.core.process_videos('path/to/videos')")
     
-    console.print("\n[yellow]# 根据码率分类视频[/yellow]")
-    console.print("vb.classify_videos(folder_path, is_move=False)")
-    
-    console.print("\n[yellow]# 处理视频格式[/yellow]")
-    console.print("vb.process_videos_in_dir(folder_path)")
-    console.print("vb.add_nov_extension('path/to/video.mp4')")
-    console.print("vb.check_duplicates(folder_path)")
+    console.print("\n[yellow]# 也可以直接导入常用类[/yellow]")
+    console.print("from videobrake import VideoAnalyzer, VideoProcessor, FormatFilter")
+    console.print("analyzer = VideoAnalyzer()")
+    console.print("processor = VideoProcessor(analyzer)")
+    console.print("format_filter = FormatFilter()")
     
     console.print("\n[blue]提示：这只是演示代码，实际使用时请替换为真实路径[/blue]")
 
