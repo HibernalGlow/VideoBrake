@@ -147,7 +147,7 @@ def interactive_analyze():
     
     # 询问码率等级设置
     console.print("[cyan]设置码率等级参数[/cyan]")
-    step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=5.0)
+    step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=2.0)
     max_levels = IntPrompt.ask("最大档位数量", default=10)
     
     # 创建分析器并分析文件夹
@@ -197,7 +197,7 @@ def interactive_classify():
     
     # 询问码率等级设置
     console.print("[cyan]设置码率等级参数[/cyan]")
-    step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=5.0)
+    step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=2.0)
     max_levels = IntPrompt.ask("最大档位数量", default=10)
     
     # 显示码率等级
