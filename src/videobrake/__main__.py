@@ -11,6 +11,7 @@ from pathlib import Path
 from rich.console import Console
 
 from videobrake import VideoBrake, __version__
+from videobrake.interactive import run_interactive
 
 console = Console()
 
@@ -21,6 +22,7 @@ def create_parser():
     
     # 添加全局选项
     parser.add_argument('--version', '-v', action='store_true', help='显示版本信息')
+    parser.add_argument('--interactive', '-i', action='store_true', help='启动交互式界面')
     
     # 创建子命令
     subparsers = parser.add_subparsers(dest='command', help='可用子命令')
@@ -58,10 +60,13 @@ def main():
             console.print(f"VideoBrake 版本: {__version__}")
             return 0
         
-        # 如果没有指定命令，显示帮助信息
+        # 启动交互式界面
+        if args.interactive:
+            return run_interactive()
+        
+        # 如果没有指定命令，默认启动交互式界面
         if not args.command:
-            parser.print_help()
-            return 0
+            return run_interactive()
             
         # 创建VideoBrake实例
         vb = VideoBrake()
