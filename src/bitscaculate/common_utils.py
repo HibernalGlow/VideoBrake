@@ -10,7 +10,7 @@ import cv2
 import shutil
 from pathlib import Path
 from typing import Dict, List, Set, Tuple, Any, Optional, Union
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # 视频文件类型
 VIDEO_FILE_TYPES = {
@@ -52,19 +52,73 @@ class VideoInfo:
         """返回以MB为单位的文件大小"""
         return self.size_bytes / (1024 * 1024) if self.size_bytes > 0 else 0
     
+    @property
+    def duration_formatted(self) -> str:
+        """以时:分:秒格式返回视频时长"""
+        if self.duration <= 0:
+            return "00:00:00"
+        
+        td = timedelta(seconds=self.duration)
+        hours, remainder = divmod(td.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        
+        # 如果时长超过1天，添加天数
+        if td.days > 0:
+            return f"{td.days}天 {hours:02d}:{minutes:02d}:{seconds:02d}"
+        else:
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    
+    @property
+    def size_formatted(self) -> str:
+        """以人类可读格式返回文件大小"""
+        if self.size_bytes < 1024:
+            return f"{self.size_bytes} B"
+        elif self.size_bytes < 1024 * 1024:
+            return f"{self.size_bytes / 1024:.2f} KB"
+        elif self.size_bytes < 1024 * 1024 * 1024:
+            return f"{self.size_bytes / (1024 * 1024):.2f} MB"
+        else:
+            return f"{self.size_bytes / (1024 * 1024 * 1024):.2f} GB"
+    
+    @property
+    def bitrate_formatted(self) -> str:
+        """以人类可读格式返回码率"""
+        if self.bitrate < 1000:
+            return f"{self.bitrate:.2f} bps"
+        elif self.bitrate < 1000000:
+            return f"{self.bitrate / 1000:.2f} Kbps"
+        else:
+            return f"{self.bitrate / 1000000:.2f} Mbps"
+    
+    @property
+    def resolution(self) -> str:
+        """返回分辨率描述"""
+        if self.width == 3840 and self.height == 2160:
+            return f"{self.width}x{self.height} (4K UHD)"
+        elif self.width == 1920 and self.height == 1080:
+            return f"{self.width}x{self.height} (1080p Full HD)"
+        elif self.width == 1280 and self.height == 720:
+            return f"{self.width}x{self.height} (720p HD)"
+        else:
+            return f"{self.width}x{self.height}"
+    
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典表示，便于JSON序列化"""
         return {
-            "path": self.path,
+            # "path": self.path,
             "filename": self.filename,
-            "duration": self.duration,
-            "bitrate": self.bitrate,
-            "bitrate_mbps": self.bitrate_mbps,
+            # "duration": self.duration,
+            "duration_formatted": self.duration_formatted,
+            # "bitrate": self.bitrate,
+            "bitrate_mbps": round(self.bitrate_mbps, 0),
+            "bitrate_formatted": self.bitrate_formatted,
             "width": self.width,
             "height": self.height,
-            "fps": self.fps,
-            "size_bytes": self.size_bytes,
-            "size_mb": self.size_mb
+            "resolution": self.resolution,
+            "fps": round(self.fps, 1),
+            # "size_bytes": self.size_bytes,
+            "size_mb": round(self.size_mb, 1),
+            # "size_formatted": self.size_formatted
         }
     
     @classmethod

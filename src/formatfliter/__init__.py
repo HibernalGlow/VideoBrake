@@ -4,7 +4,7 @@
 提供视频文件格式转换功能，包括添加/移除.nov后缀和检查重复项
 """
 
-from .core import (
+from .__main__ import (
     FormatFilter,
     main,
     process_videos,

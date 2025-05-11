@@ -20,6 +20,10 @@ dependencies = [
     "pyperclip>=1.8.2",
     "opencv-python>=4.7.0",
     "send2trash>=1.8.0",
+    "streamlit>=1.45.0",
+    "pandas>=2.2.3",
+    "streamlit-aggrid>=1.1.4.post1",
+    "typer>=0.9.0",
 ]
 
 [project.optional-dependencies]
@@ -35,7 +39,7 @@ dev = [
 "Bug Tracker" = "https://github.com/HibernalGlow/VideoBrake/issues"
 
 [project.scripts]
-videobrake = "videobrake.__main__:main"
+videobrake = "videobrake.cli:app"
 bitscaculate = "bitscaculate.__main__:main"
 formatfliter = "formatfliter.core:main"
 

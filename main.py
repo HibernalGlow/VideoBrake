@@ -12,8 +12,11 @@ def main():
     parser = argparse.ArgumentParser(description="VideoBrake - 视频处理工具集")
     parser.add_argument('--version', '-v', action='store_true', help='显示版本信息')
     parser.add_argument('--demo', '-d', action='store_true', help='运行功能演示')
+    parser.add_argument('--interactive', '-i', action='store_true', help='运行交互式界面')
+    parser.add_argument('--cli', '-c', action='store_true', help='使用命令行界面')
     
-    args = parser.parse_args()
+    # 尝试解析已知参数
+    args, remaining = parser.parse_known_args()
     
     if args.version:
         from videobrake import __version__
@@ -23,14 +26,29 @@ def main():
     if args.demo:
         run_demo()
         return 0
+        
+    if args.interactive:
+        from videobrake.interactive import run_interactive
+        return run_interactive()
+    
+    # 如果指定了CLI模式或者有额外的参数，使用Typer CLI
+    if args.cli or remaining:
+        # 将控制权转交给Typer
+        sys.argv = [sys.argv[0]] + remaining
+        from videobrake.cli import app
+        app()
+        return 0
     
     # 默认显示使用信息
     console.print("[bold cyan]VideoBrake - 视频处理工具集[/bold cyan]")
     console.print("\n可用的工具包:")
     console.print("1. bitscaculate - 视频码率分析与分类工具")
-    console.print("   - 命令: bitscaculate")
     console.print("2. formatfliter - 视频格式过滤器")
-    console.print("   - 命令: formatfliter")
+    console.print("\n使用方式:")
+    console.print("   python main.py --interactive  # 启动交互式界面")
+    console.print("   python main.py analyze --help  # 查看分析命令帮助")
+    console.print("   python main.py classify --help  # 查看分类命令帮助")
+    console.print("   python main.py format --help  # 查看格式处理命令帮助")
     console.print("\n运行示例演示:")
     console.print("   python main.py --demo")
     

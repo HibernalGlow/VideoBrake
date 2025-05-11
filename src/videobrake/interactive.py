@@ -16,9 +16,9 @@ from rich.panel import Panel
 from rich.table import Table
 
 # 导入统一接口
-from videobrake import VideoBrake, __version__
+from videobrake import VideoBrake
 # 导入formatfliter模块所需函数
-from formatfliter.core import find_video_files
+from formatfliter.__main__ import find_video_files
 
 console = Console()
 
@@ -53,7 +53,7 @@ class InteractiveUI:
     def show_main_menu(self) -> None:
         """显示主菜单"""
         while True:
-            console.print(Panel.fit(f"[bold cyan]VideoBrake - 视频处理工具集 v{__version__}[/bold cyan]"))
+            console.print(Panel.fit(f"[bold cyan]VideoBrake - 视频处理工具集 [/bold cyan]"))
             
             console.print("1. 视频分析功能")
             console.print("2. 视频分类功能")
@@ -173,7 +173,7 @@ class InteractiveUI:
         
         # 询问码率等级设置
         console.print("[cyan]设置码率等级参数[/cyan]")
-        step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=2.0)
+        step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=1.0)
         max_levels = IntPrompt.ask("最大档位数量", default=10)
         
         # 创建分析器并分析文件夹
@@ -214,7 +214,7 @@ class InteractiveUI:
         
         # 询问码率等级设置
         console.print("[cyan]设置码率等级参数[/cyan]")
-        step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=2.0)
+        step_mb = FloatPrompt.ask("每档码率大小(Mbps)", default=1.0)
         max_levels = IntPrompt.ask("最大档位数量", default=10)
         
         # 重新创建带有自定义参数的实例
