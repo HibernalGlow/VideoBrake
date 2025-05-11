@@ -20,9 +20,9 @@ from rich.logging import RichHandler
 from rich.prompt import IntPrompt, FloatPrompt
 
 # 导入程序模块
-from bitscaculate.video_analyzer import VideoAnalyzer
-from bitscaculate.video_processor import VideoProcessor
-from bitscaculate.common_utils import create_bitrate_levels
+from bitv.video_analyzer import VideoAnalyzer
+from bitv.video_processor import VideoProcessor
+from bitv.common_utils import create_bitrate_levels
 
 # 设置控制台对象
 console = Console()
@@ -76,7 +76,7 @@ def setup_logger(app_name="app", project_root=None):
     return logger, config_info
 
 # 初始化日志
-logger, _ = setup_logger(app_name="videobrake")
+logger, _ = setup_logger(app_name="brakev")
 
 
 def create_arg_parser():
@@ -402,6 +402,52 @@ def main():
         import traceback
         console.print(traceback.format_exc())
         return 1
+
+
+def interactive_main():
+    """交互式界面主入口，供主包调用"""
+    setup_logger("bitv")
+    interactive_menu()
+
+
+def analyze_file(file_path: str):
+    """分析单个视频文件，供主包调用
+    
+    Args:
+        file_path: 视频文件路径
+    """
+    setup_logger("bitv")
+    analyze_single_file(file_path)
+
+
+def analyze_dir(dir_path: str, recursive: bool = False):
+    """分析文件夹中的所有视频，供主包调用
+    
+    Args:
+        dir_path: 视频文件夹路径
+        recursive: 是否递归处理子文件夹
+    """
+    setup_logger("bitv")
+    # 创建分析器
+    analyzer = VideoAnalyzer()
+    
+    # 分析文件夹
+    result = analyzer.analyze_folder(dir_path, recursive=recursive)
+    
+    # 生成JSON报告
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = os.path.join(dir_path, f"video_analysis_{timestamp}.json")
+    analyzer.generate_json_report(result, output_file)
+
+
+def main():
+    """命令行主入口"""
+    setup_logger("bitv")
+    
+    # 如果没有命令行参数，进入交互式菜单
+    if len(sys.argv) == 1:
+        interactive_menu()
+        return
 
 
 if __name__ == "__main__":

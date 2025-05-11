@@ -21,13 +21,13 @@ from rich.panel import Panel
 from rich.table import Table
 
 # 导入通用工具
-from bitscaculate.common_utils import (
+from bitv.common_utils import (
     VideoInfo, ProcessResult, ProcessStats,
     get_bitrate_level, ensure_dir_exists, get_relative_path
 )
 
 # 导入分析器
-from bitscaculate.video_analyzer import VideoAnalyzer
+from bitv.video_analyzer import VideoAnalyzer
 
 console = Console()
 

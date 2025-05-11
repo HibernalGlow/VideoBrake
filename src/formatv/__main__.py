@@ -307,6 +307,220 @@ class FormatFilter:
             console.print(Panel.fit(f"[bold cyan]处理目录: {path}[/bold cyan]"))
             process_videos(path)
 
+    def find_video_files(self, directory: str, recursive: bool = False) -> List[str]:
+        """
+        查找目录中的视频文件
+        
+        Args:
+            directory: 目录路径
+            recursive: 是否递归搜索
+            
+        Returns:
+            List[str]: 视频文件路径列表
+        """
+        video_extensions = ('.mp4', '.mov', '.avi', '.mkv', '.wmv', '.flv', '.webm', '.m4v', '.mpeg', '.mpg', '.m2ts', '.ts', '.mts')
+        nov_extensions = tuple(ext + '.nov' for ext in video_extensions)
+        all_extensions = video_extensions + nov_extensions
+        
+        video_files = []
+        
+        if recursive:
+            for root, _, files in os.walk(directory):
+                for file in files:
+                    if file.lower().endswith(all_extensions):
+                        video_files.append(os.path.join(root, file))
+        else:
+            for file in os.listdir(directory):
+                if file.lower().endswith(all_extensions):
+                    video_files.append(os.path.join(directory, file))
+                    
+        return video_files
+
+    def add_nov_extension(self, path: str, recursive: bool = False) -> None:
+        """
+        为视频文件添加.nov扩展名
+        
+        Args:
+            path: 文件或目录路径
+            recursive: 是否递归处理子文件夹
+        """
+        if os.path.isfile(path):
+            # 单个文件处理
+            result, msg = process_single_file(path, add_nov=True)
+            status = "[green]✓[/green]" if result else "[red]✗[/red]"
+            console.print(f"{status} {msg}")
+            return
+        
+        # 目录处理
+        video_files = self.find_video_files(path, recursive)
+        
+        if not video_files:
+            console.print(f"[yellow]在指定路径下未找到视频文件: {path}[/yellow]")
+            return
+        
+        # 显示进度条处理文件
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+            console=console
+        ) as progress:
+            task = progress.add_task(f"正在添加.nov扩展名...", total=len(video_files))
+            
+            # 使用线程池加速处理
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = []
+                for file_path in video_files:
+                    # 跳过已有.nov扩展名的文件
+                    if file_path.lower().endswith('.nov'):
+                        progress.advance(task)
+                        continue
+                    
+                    futures.append(executor.submit(process_single_file, file_path, True))
+                    
+                # 收集结果
+                success_count = 0
+                for future in concurrent.futures.as_completed(futures):
+                    result, _ = future.result()
+                    if result:
+                        success_count += 1
+                    progress.advance(task)
+        
+        # 显示处理结果
+        console.print(f"[green]处理完成: 成功处理 {success_count}/{len(video_files)} 个文件[/green]")
+
+    def remove_nov_extension(self, path: str, recursive: bool = False) -> None:
+        """
+        移除视频文件的.nov扩展名
+        
+        Args:
+            path: 文件或目录路径
+            recursive: 是否递归处理子文件夹
+        """
+        if os.path.isfile(path):
+            # 单个文件处理
+            result, msg = process_single_file(path, add_nov=False)
+            status = "[green]✓[/green]" if result else "[red]✗[/red]"
+            console.print(f"{status} {msg}")
+            return
+        
+        # 目录处理
+        video_files = self.find_video_files(path, recursive)
+        
+        if not video_files:
+            console.print(f"[yellow]在指定路径下未找到视频文件: {path}[/yellow]")
+            return
+        
+        # 筛选出具有.nov扩展名的文件
+        nov_files = [f for f in video_files if f.lower().endswith('.nov')]
+        
+        if not nov_files:
+            console.print(f"[yellow]在指定路径下未找到带.nov扩展名的视频文件: {path}[/yellow]")
+            return
+        
+        # 显示进度条处理文件
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
+            TimeElapsedColumn(),
+            TimeRemainingColumn(),
+            console=console
+        ) as progress:
+            task = progress.add_task(f"正在移除.nov扩展名...", total=len(nov_files))
+            
+            # 使用线程池加速处理
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = []
+                for file_path in nov_files:
+                    futures.append(executor.submit(process_single_file, file_path, False))
+                    
+                # 收集结果
+                success_count = 0
+                for future in concurrent.futures.as_completed(futures):
+                    result, _ = future.result()
+                    if result:
+                        success_count += 1
+                    progress.advance(task)
+        
+        # 显示处理结果
+        console.print(f"[green]处理完成: 成功处理 {success_count}/{len(nov_files)} 个文件[/green]")
+
+
+def add_nov_extension(path: str, recursive: bool = False) -> None:
+    """
+    为视频文件添加.nov扩展名
+    
+    Args:
+        path: 文件或目录路径
+        recursive: 是否递归处理子文件夹
+    """
+    filter_tool = FormatFilter()
+    filter_tool.add_nov_extension(path, recursive)
+
+def remove_nov_extension(path: str, recursive: bool = False) -> None:
+    """
+    移除视频文件的.nov扩展名
+    
+    Args:
+        path: 文件或目录路径
+        recursive: 是否递归处理子文件夹
+    """
+    filter_tool = FormatFilter()
+    filter_tool.remove_nov_extension(path, recursive)
+
+
+def interactive_main():
+    """交互式界面主入口"""
+    console.print(Panel.fit("视频格式处理工具", border_style="cyan"))
+    console.print()
+    
+    # 显示功能菜单
+    console.print("可用功能：")
+    console.print("1. 添加.nov扩展名")
+    console.print("2. 移除.nov扩展名")
+    console.print("q. 返回上级菜单")
+    console.print()
+    
+    choice = Prompt.ask("请选择功能", choices=["1", "2", "q"], default="q")
+    
+    if choice == "q":
+        return
+    
+    path = get_path_from_input("请输入视频文件或文件夹路径")
+    recursive = Confirm.ask("是否递归处理子文件夹？", default=False)
+    
+    if choice == "1":
+        add_nov_extension(path, recursive)
+    elif choice == "2":
+        remove_nov_extension(path, recursive)
+    
+    console.print()
+    Prompt.ask("[green]操作完成，按回车继续[/green]")
+
+def get_path_from_input(message: str = "请输入路径") -> str:
+    """获取用户输入的路径"""
+    while True:
+        path = Prompt.ask(message)
+        
+        # 处理带引号的路径
+        if path.startswith('"') and path.endswith('"'):
+            path = path[1:-1]  # 去除首尾的引号
+            
+        if not path:
+            console.print("[yellow]路径不能为空[/yellow]")
+            continue
+            
+        if not os.path.exists(path):
+            console.print(f"[red]路径不存在: {path}[/red]")
+            continue
+            
+        return path
+
 
 def main(use_clipboard: bool = False) -> None:
     """

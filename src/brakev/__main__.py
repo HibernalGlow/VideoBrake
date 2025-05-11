@@ -1,5 +1,5 @@
 """
-VideoBrake - 视频处理工具集
+brakev - 视频处理工具集
 
 命令行入口模块 - 负责中转命令到不同的功能实现
 """
@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import List, Optional
 
 # 导入 Typer CLI
-from videobrake.cli import app
-from videobrake.interactive import run_interactive
+from brakev.cli import app
+from brakev.interactive import run_interactive
 
 
 def main():

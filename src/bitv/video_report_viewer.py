@@ -1,5 +1,5 @@
 """
-VideoBrake 视频报告查看器
+brakev 视频报告查看器
 
 一个Streamlit应用，用于可视化和筛选视频分析JSON报告数据
 """
@@ -13,7 +13,7 @@ import plotly.express as px
 
 # 设置页面标题
 st.set_page_config(
-    page_title="VideoBrake 视频报告查看器",
+    page_title="brakev 视频报告查看器",
     page_icon="🎬",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -382,7 +382,7 @@ def configure_grid(df):
 
 def main():
     """主函数"""
-    st.title("🎬 VideoBrake 视频报告查看器")
+    st.title("🎬 brakev 视频报告查看器")
     
     # 侧边栏
     with st.sidebar:

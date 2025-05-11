@@ -1,11 +1,11 @@
 [project]
-name = "videobrake"
-version = "0.1.0"
+name = "brakev"
+version = "0.2.0"
 description = "视频码率分析与分类工具 - 按码率自动对视频文件进行分组"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
-    {name = "VideoBrake", email = "videobrake@example.com"}
+    {name = "brakev", email = "brakev@example.com"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -35,13 +35,14 @@ dev = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/HibernalGlow/VideoBrake"
-"Bug Tracker" = "https://github.com/HibernalGlow/VideoBrake/issues"
+"Homepage" = "https://github.com/HibernalGlow/brakev"
+"Bug Tracker" = "https://github.com/HibernalGlow/brakev/issues"
 
 [project.scripts]
-videobrake = "videobrake.cli:app"
-bitscaculate = "bitscaculate.__main__:main"
-formatfliter = "formatfliter.core:main"
+brakev = "brakev.__main__:main"
+bkv = "brakev.__main__:main"  # 添加别名
+bitv = "bitv.__main__:main"
+formatv = "formatv.__main__:main"
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
@@ -49,7 +50,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["bitscaculate", "formatfliter", "videobrake"]
+packages = ["brakev", "bitv", "formatv"]
 
 [tool.black]
 line-length = 88
