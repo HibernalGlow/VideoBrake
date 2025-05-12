@@ -7,7 +7,6 @@
 import os
 import sys
 import argparse
-import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
@@ -29,54 +28,54 @@ console = Console()
 
 # 创建日志记录器
 from loguru import logger
-def setup_logger(app_name="app", project_root=None):
-    """配置 Loguru 日志系统"""
-    # 获取项目根目录
-    if project_root is None:
-        project_root = Path(__file__).parent.parent.resolve()
+# def setup_logger(app_name="app", project_root=None):
+#     """配置 Loguru 日志系统"""
+#     # 获取项目根目录
+#     if project_root is None:
+#         project_root = Path(__file__).parent.parent.resolve()
     
-    # 清除默认处理器
-    logger.remove()
+#     # 清除默认处理器
+#     logger.remove()
     
-    # 添加控制台处理器（简洁版格式）
-    logger.add(
-        sys.stdout,
-        level="INFO",
-        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <blue>{elapsed}</blue> | <level>{level.icon} {level: <8}</level> | <cyan>{name}:{function}:{line}</cyan> - <level>{message}</level>"
-    )
+#     # 添加控制台处理器（简洁版格式）
+#     logger.add(
+#         sys.stdout,
+#         level="INFO",
+#         format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <blue>{elapsed}</blue> | <level>{level.icon} {level: <8}</level> | <cyan>{name}:{function}:{line}</cyan> - <level>{message}</level>"
+#     )
     
-    # 使用 datetime 构建日志路径
-    current_time = datetime.now()
-    date_str = current_time.strftime("%Y-%m-%d")
-    hour_str = current_time.strftime("%H")
-    minute_str = current_time.strftime("%M%S")
+#     # 使用 datetime 构建日志路径
+#     current_time = datetime.now()
+#     date_str = current_time.strftime("%Y-%m-%d")
+#     hour_str = current_time.strftime("%H")
+#     minute_str = current_time.strftime("%M%S")
     
-    # 构建日志目录和文件路径
-    log_dir = os.path.join(project_root, "logs", app_name, date_str, hour_str)
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, f"{minute_str}.log")
+#     # 构建日志目录和文件路径
+#     log_dir = os.path.join(project_root, "logs", app_name, date_str, hour_str)
+#     os.makedirs(log_dir, exist_ok=True)
+#     log_file = os.path.join(log_dir, f"{minute_str}.log")
     
-    # 添加文件处理器
-    logger.add(
-        log_file,
-        level="DEBUG",
-        rotation="10 MB",
-        retention="30 days",
-        compression="zip",
-        encoding="utf-8",
-        format="{time:YYYY-MM-DD HH:mm:ss} | {elapsed} | {level.icon} {level: <8} | {name}:{function}:{line} - {message}",
-    )
+#     # 添加文件处理器
+#     logger.add(
+#         log_file,
+#         level="DEBUG",
+#         rotation="10 MB",
+#         retention="30 days",
+#         compression="zip",
+#         encoding="utf-8",
+#         format="{time:YYYY-MM-DD HH:mm:ss} | {elapsed} | {level.icon} {level: <8} | {name}:{function}:{line} - {message}",
+#     )
     
-    # 创建配置信息字典
-    config_info = {
-        'log_file': log_file,
-    }
+#     # 创建配置信息字典
+#     config_info = {
+#         'log_file': log_file,
+#     }
     
-    logger.info(f"日志系统已初始化，应用名称: {app_name}")
-    return logger, config_info
+#     logger.info(f"日志系统已初始化，应用名称: {app_name}")
+#     return logger, config_info
 
-# 初始化日志
-logger, _ = setup_logger(app_name="brakev")
+# # 初始化日志
+# logger, _ = setup_logger(app_name="brakev")
 
 
 def create_arg_parser():
@@ -406,7 +405,7 @@ def main():
 
 def interactive_main():
     """交互式界面主入口，供主包调用"""
-    setup_logger("bitv")
+    # setup_logger("bitv")
     interactive_menu()
 
 
@@ -416,7 +415,7 @@ def analyze_file(file_path: str):
     Args:
         file_path: 视频文件路径
     """
-    setup_logger("bitv")
+    # setup_logger("bitv")
     analyze_single_file(file_path)
 
 
@@ -427,7 +426,7 @@ def analyze_dir(dir_path: str, recursive: bool = False):
         dir_path: 视频文件夹路径
         recursive: 是否递归处理子文件夹
     """
-    setup_logger("bitv")
+    # setup_logger("bitv")
     # 创建分析器
     analyzer = VideoAnalyzer()
     
@@ -442,7 +441,7 @@ def analyze_dir(dir_path: str, recursive: bool = False):
 
 def main():
     """命令行主入口"""
-    setup_logger("bitv")
+    # setup_logger("bitv")
     
     # 如果没有命令行参数，进入交互式菜单
     if len(sys.argv) == 1:

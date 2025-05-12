@@ -1,6 +1,6 @@
 [project]
 name = "brakev"
-version = "0.2.0"
+version = "0.2.2"
 description = "视频码率分析与分类工具 - 按码率自动对视频文件进行分组"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -24,6 +24,7 @@ dependencies = [
     "pandas>=2.2.3",
     "streamlit-aggrid>=1.1.4.post1",
     "typer>=0.9.0",
+    "plotly>=6.0.1",
 ]
 
 [project.optional-dependencies]
