@@ -189,7 +189,7 @@ def command_line_mode(args: argparse.Namespace) -> None:
         console.print("2. 恢复原始文件名")
         console.print("3. 检查重复项")
         
-        choice = Prompt.ask("请选择", choices=["1", "2", "3"], default="1")
+        choice = Prompt.ask("请选择", choices=["1", "2", "3"], default="3")
         
         operation_map = {
             "1": "add_nov",
