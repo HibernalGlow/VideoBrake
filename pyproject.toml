@@ -44,6 +44,7 @@ brakev = "brakev.__main__:main"
 bkv = "brakev.__main__:main"  # 添加别名
 bitv = "bitv.__main__:main"
 formatv = "formatv.__main__:main"
+engingv = "engingv.__main__:main"
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
