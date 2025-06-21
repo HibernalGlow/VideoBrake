@@ -5,19 +5,19 @@
 ### 方法一：直接运行 Streamlit 应用
 ```bash
 cd "d:\1VSCODE\Projects\PackU\VideoBrake"
-streamlit run src/engingv/app.py
+streamlit run src/wpengine/app.py
 ```
 
 ### 方法二：使用 CLI 工具
 ```bash
 cd "d:\1VSCODE\Projects\PackU\VideoBrake"
-python -m engingv
+python -m src.wpengine
 ```
 
 ### 方法三：使用启动脚本
 ```bash
 cd "d:\1VSCODE\Projects\PackU\VideoBrake"
-python run_engingv.py
+python run_wpengine.py
 ```
 
 ## 工具功能详解

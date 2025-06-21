@@ -9,7 +9,7 @@ from pathlib import Path
 
 def main():
     """启动 Streamlit 应用"""
-    app_path = Path(__file__).parent / "src" / "engingv" / "app.py"
+    app_path = Path(__file__).parent / "src" / "engingv" / "app_simple.py"
     
     cmd = [
         sys.executable, "-m", "streamlit", "run", 

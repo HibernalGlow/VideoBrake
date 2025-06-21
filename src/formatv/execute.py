@@ -14,7 +14,7 @@ from rich.progress import TimeElapsedColumn, TimeRemainingColumn
 from rich.panel import Panel
 
 # 导入配置处理
-from .config import get_video_extensions, get_prefix_list, get_prefix_by_name, get_output_filename
+from engingv.utils.config import get_video_extensions, get_prefix_list, get_prefix_by_name, get_output_filename
 
 # 设置控制台对象
 console = Console()

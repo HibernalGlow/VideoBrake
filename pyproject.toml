@@ -52,7 +52,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["brakev", "bitv", "formatv"]
+packages = ["brakev", "bitv", "formatv", "engingv"]
 
 [tool.black]
 line-length = 88

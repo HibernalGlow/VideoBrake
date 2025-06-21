@@ -7,7 +7,7 @@ from typing import List, Tuple, Dict, Any
 from rich.console import Console
 
 # 导入配置处理
-from .config import get_video_extensions, get_prefix_list, get_prefix_by_name
+from engingv.utils.config import get_video_extensions, get_prefix_list, get_prefix_by_name
 
 # 设置控制台对象
 console = Console()

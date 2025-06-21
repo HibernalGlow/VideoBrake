@@ -11,10 +11,10 @@ from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 
 # 导入其他模块
-from .collect import collect_paths
-from .scan import scan_directories
-from .execute import execute_operation
-from .config import get_prefix_list, load_config
+from engingv.collect import collect_paths
+from engingv.scan import scan_directories
+from engingv.execute import execute_operation
+from engingv.utils.config import get_prefix_list, load_config
 
 # 设置控制台对象
 console = Console()

@@ -8,9 +8,9 @@ import tempfile
 from pathlib import Path
 from datetime import datetime
 
-from src.engingv.models import WallpaperFolder, create_wallpaper_folder, load_project_json
-from src.engingv.scanner import WorkshopScanner
-from src.engingv.renamer import FolderRenamer
+from engingv.core.models import WallpaperFolder, create_wallpaper_folder, load_project_json
+from engingv.core.scanner import WorkshopScanner
+from engingv.core.renamer import FolderRenamer
 
 
 class TestWallpaperModels(unittest.TestCase):

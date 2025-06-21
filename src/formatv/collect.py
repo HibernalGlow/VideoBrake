@@ -9,7 +9,7 @@ from rich.console import Console
 from rich.prompt import Prompt
 
 # 导入配置处理
-from .config import get_default_path
+from engingv.utils.config import get_default_path
 
 # 设置控制台对象
 console = Console()
