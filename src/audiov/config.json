@@ -1,0 +1,65 @@
+{
+  "ffmpeg": {
+    "executable_path": "ffmpeg",
+    "timeout": 300,
+    "encoding": "utf-8",
+    "hide_banner": true,
+    "log_level": "error"
+  },
+  "audio_formats": {
+    "mp3": {
+      "codec": "libmp3lame",
+      "extension": ".mp3",
+      "quality": "-q:a 2",
+      "description": "MP3 (高质量)"
+    },
+    "aac": {
+      "codec": "aac",
+      "extension": ".aac",
+      "quality": "-b:a 128k",
+      "description": "AAC (标准质量)"
+    },
+    "wav": {
+      "codec": "pcm_s16le",
+      "extension": ".wav",
+      "quality": "",
+      "description": "WAV (无损)"
+    },
+    "flac": {
+      "codec": "flac",
+      "extension": ".flac",
+      "quality": "",
+      "description": "FLAC (无损压缩)"
+    },
+    "m4a": {
+      "codec": "aac",
+      "extension": ".m4a",
+      "quality": "-b:a 192k",
+      "description": "M4A (高质量)"
+    },
+    "copy": {
+      "codec": "copy",
+      "extension": "auto",
+      "quality": "",
+      "description": "极速模式 (直接复制音频流)"
+    }
+  },
+  "output": {
+    "default_directory": "extracted_audio",
+    "preserve_structure": true,
+    "overwrite_existing": false,
+    "create_subdirs": true
+  },
+  "processing": {
+    "batch_size": 5,
+    "parallel_processing": false,
+    "log_level": "INFO",
+    "speed_mode": "fast",
+    "fast_mode_default": true
+  },
+  "ui": {
+    "show_progress": true,
+    "confirm_before_start": true,
+    "show_file_details": true
+  }
+}

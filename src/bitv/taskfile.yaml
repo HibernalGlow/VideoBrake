@@ -1,0 +1,8 @@
+version: '3'
+
+tasks:
+  run:
+    desc: 启动Streamlit视频报告查看器
+    cmds:
+      - python -m streamlit run {{.ROOT_DIR}}/src/bitv/video_report_viewer.py
+    silent: false

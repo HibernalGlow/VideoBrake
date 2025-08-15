@@ -1,0 +1,63 @@
+[project]
+name = "brakev"
+version = "0.2.2"
+description = "视频码率分析与分类工具 - 按码率自动对视频文件进行分组"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "brakev", email = "brakev@example.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "rich>=13.3.0",
+    "loguru>=0.7.0",
+    "pyperclip>=1.8.2",
+    "send2trash>=1.8.0",
+    "streamlit>=1.45.0",
+    "pandas>=2.2.3",
+    "streamlit-aggrid>=1.1.4.post1",
+    "typer>=0.9.0",
+    "plotly>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/HibernalGlow/brakev"
+"Bug Tracker" = "https://github.com/HibernalGlow/brakev/issues"
+
+[project.scripts]
+brakev = "brakev.__main__:main"
+bkv = "brakev.__main__:main"  # 添加别名
+bitv = "bitv.__main__:main"
+formatv = "formatv.__main__:main"
+engingv = "engingv.__main__:main"
+audiov = "audiov.__main__:main"
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["brakev", "bitv", "formatv", "engingv"]
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88

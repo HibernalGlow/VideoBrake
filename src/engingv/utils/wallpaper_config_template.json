@@ -1,0 +1,16 @@
+{
+  "workshop_path": "E:\\SteamLibrary\\steamapps\\workshop\\content\\431960",
+  "name_template": "[#{id}]{original_name}+{title}",
+  "max_workers": 4,
+  "recent_paths": [],
+  "templates": {
+    "标准格式": "[#{id}]+{title}",
+    "简洁格式": "{title}_{id}",
+    "类型分类": "{type}_{rating}_{title}",
+    "时间戳": "{title}_{id}_{timestamp}"
+  },
+  "export_settings": {
+    "include_metadata": true,
+    "export_format": "json"
+  }
+}
