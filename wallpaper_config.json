@@ -1,0 +1,22 @@
+{
+  "workshop_path": "E:\\SteamLibrary\\steamapps\\workshop\\content\\431960",
+  "name_template": "[#{id}]{original_name}+{title}",
+  "max_workers": 4,
+  "recent_paths": [
+    "E:\\SteamLibrary\\steamapps\\workshop\\content\\431960"
+  ],
+  "display_settings": {
+    "items_per_page": 20,
+    "default_view": "grid"
+  },
+  "export_settings": {
+    "include_metadata": true,
+    "export_format": "json"
+  },
+  "templates": {
+    "标准格式": "[#{id}]{original_name}+{title}",
+    "简洁格式": "{title}_{id}",
+    "类型分类": "{type}_{rating}_{title}",
+    "自定义": "{title}"
+  }
+}

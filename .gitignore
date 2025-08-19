@@ -10,4 +10,3 @@ wheels/
 .venv
 *.log
 /uv.lock
-src/subx/no_subtitle_folders.md

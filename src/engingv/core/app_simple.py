@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from ..core.scanner import WorkshopScanner
-from ..core.models import WallpaperFolder
-from ..utils.config import get_config
-from .ui_components import (
+from engingv.core.scanner import WorkshopScanner
+from engingv.core.models import WallpaperFolder
+from engingv.utils.config import get_config
+from engingv.ui.ui_components import (
     display_wallpaper_grid, 
     display_wallpaper_checkbox_view, 
     create_filter_interface,
@@ -20,7 +20,7 @@ from .ui_components import (
     create_export_buttons,
     format_file_size
 )
-from .rename_ui import create_rename_interface
+from engingv.ui.rename_ui import create_rename_interface
 
 
 def setup_page_config():
