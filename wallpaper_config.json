@@ -1,10 +1,14 @@
 {
   "workshop_path": "E:\\SteamLibrary\\steamapps\\workshop\\content\\431960",
-  "name_template": "[#{id}]{original_name}+{title}",
+  "name_template": "{title}_{desc}_{id}",
   "max_workers": 4,
   "recent_paths": [
     "E:\\SteamLibrary\\steamapps\\workshop\\content\\431960"
   ],
+  "rename_settings": {
+    "description_max_length": 18,
+    "name_max_length": 120
+  },
   "display_settings": {
     "items_per_page": 20,
     "default_view": "grid"
@@ -17,6 +21,9 @@
     "标准格式": "[#{id}]{original_name}+{title}",
     "简洁格式": "{title}_{id}",
     "类型分类": "{type}_{rating}_{title}",
-    "自定义": "{title}"
+    "自定义": "{title}",
+    "含描述简洁": "{title}_{desc}_{id}",
+    "含描述标准": "[#{id}]{title}+{desc}",
+    "描述优先": "{desc}_{title}_{id}"
   }
 }

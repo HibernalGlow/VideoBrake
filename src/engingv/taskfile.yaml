@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  run:
+    desc: 启动 Wallpaper Engine 工坊管理工具 (自动端口)
+    cmds:
+      - python -m engingv --gui
+    silent: false
+  run-port:
+    desc: 使用固定端口启动 (如果需要手动指定)
+    vars:
+      PORT: 8501
+    cmds:
+      - python -m engingv --gui 
+      # --port {{.PORT}}
+    silent: false

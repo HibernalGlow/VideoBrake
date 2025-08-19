@@ -5,23 +5,44 @@ Wallpaper Engine 工坊管理工具 - CLI 入口
 import argparse
 import sys
 import subprocess
+import socket
 from pathlib import Path
 from loguru import logger
 
-def start_streamlit():
-    """启动 Streamlit 应用"""
+def _find_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("localhost", 0))
+        return s.getsockname()[1]
+
+
+def start_streamlit(port: int | None = None, auto: bool = True):
+    """启动 Streamlit 应用
+
+    Args:
+        port: 指定端口；None 则依据 auto 选择
+        auto: True 时自动寻找空闲端口
+    """
     app_path = Path(__file__).parent / "app_simple.py"
-    
-    cmd = [
-        sys.executable, "-m", "streamlit", "run", 
-        str(app_path),
-        "--server.port", "8501",
-        "--server.address", "localhost"
-    ]
-    
+
+    if port is None and auto:
+        port = _find_free_port()
+    elif port is None:
+        # 不指定端口，交由默认 8501；可能冲突
+        pass
+
+    cmd = [sys.executable, "-m", "streamlit", "run", str(app_path)]
+    if port is not None:
+        cmd += ["--server.port", str(port)]
+    cmd += ["--server.address", "localhost"]
+
+    show_port = port if port is not None else "(auto/default)"
     print("启动 Wallpaper Engine 工坊管理工具...")
-    print(f"访问地址: http://localhost:8501")
-    
+    print(f"使用端口: {show_port}")
+    if port is not None:
+        print(f"访问地址: http://localhost:{port}")
+    else:
+        print("若 8501 被占用，Streamlit 将尝试其它端口。")
+
     try:
         subprocess.run(cmd, check=True)
     except KeyboardInterrupt:
@@ -104,19 +125,16 @@ def main():
         help="指定输出文件（与 --scan 一起使用）"
     )
     
-    parser.add_argument(
-        "--version", "-v",
-        action="version",
-        version="%(prog)s 1.0.0"
-    )
+    parser.add_argument("--version", "-v", action="version", version="%(prog)s 1.0.0")
+    parser.add_argument("--port", type=int, help="指定端口；不指定则自动找空闲端口")
+    parser.add_argument("--no-auto-port", action="store_true", help="禁用自动找端口")
     
     args = parser.parse_args()
     
     if args.scan:
         scan_workshop(args.scan, args.output)
     else:
-        # 默认启动 GUI
-        start_streamlit()
+        start_streamlit(port=args.port, auto=not args.no_auto_port and args.port is None)
 
 if __name__ == "__main__":
     main()

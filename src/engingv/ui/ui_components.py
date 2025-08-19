@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from ..core.models import WallpaperFolder
+from ..utils.config import get_config
 
 
 def format_file_size(size_bytes: int) -> str:
@@ -25,35 +26,65 @@ def format_file_size(size_bytes: int) -> str:
 
 
 def display_wallpaper_grid(wallpapers: List[WallpaperFolder]) -> None:
-    """显示壁纸网格"""
-    cols = st.columns(3)
-    
+    """显示可调列数的壁纸网格并可选中"""
+    cfg = get_config()
+    grid_cols = cfg.get("display_settings.grid_columns", 3)
+    selectable = cfg.get("display_settings.grid_selectable", True)
+    desc_font = cfg.get("display_settings.description_font_size", 12)
+
+    if "selected_wallpapers" not in st.session_state:
+        st.session_state.selected_wallpapers = set()
+
+    cols = st.columns(grid_cols)
+
     for i, wallpaper in enumerate(wallpapers):
-        with cols[i % 3]:
-            st.subheader(wallpaper.title or "无标题")
-            
-            # 显示预览图
+        col = cols[i % grid_cols]
+        with col:
+            top_row = st.columns([1, 5]) if selectable else [None, None]
+            if selectable:
+                with top_row[0]:
+                    is_selected = wallpaper.workshop_id in st.session_state.selected_wallpapers
+                    chosen = st.checkbox(
+                        "选择",
+                        value=is_selected,
+                        key=f"grid_select_{wallpaper.workshop_id}",
+                        label_visibility="collapsed"
+                    )
+                    if chosen and not is_selected:
+                        st.session_state.selected_wallpapers.add(wallpaper.workshop_id)
+                    elif not chosen and is_selected:
+                        st.session_state.selected_wallpapers.discard(wallpaper.workshop_id)
+            with (top_row[1] if selectable else col):
+                st.subheader(wallpaper.title or "无标题")
+
             if wallpaper.preview_path and wallpaper.preview_path.exists():
                 try:
                     st.image(str(wallpaper.preview_path), use_container_width=True)
-                except Exception as e:
-                    st.error(f"无法显示预览图: {e}")
+                except Exception:
+                    st.error("预览图错误")
             else:
                 st.info("无预览图")
-            
-            # 显示基本信息
-            st.write(f"**ID:** {wallpaper.workshop_id}")
-            st.write(f"**类型:** {wallpaper.wallpaper_type}")
-            st.write(f"**内容评级:** {wallpaper.content_rating}")
-            st.write(f"**大小:** {format_file_size(wallpaper.size)}")
-            st.write(f"**修改时间:** {wallpaper.modified_time.strftime('%Y-%m-%d %H:%M')}")
-            
-            if wallpaper.tags:
-                st.write(f"**标签:** {', '.join(wallpaper.tags)}")
-            
+
+            meta_cols = st.columns(2)
+            with meta_cols[0]:
+                st.caption(f"ID: {wallpaper.workshop_id}")
+                st.caption(f"类型: {wallpaper.wallpaper_type}")
+                st.caption(f"评级: {wallpaper.content_rating}")
+            with meta_cols[1]:
+                st.caption(f"大小: {format_file_size(wallpaper.size)}")
+                st.caption(f"修改: {wallpaper.modified_time.strftime('%Y-%m-%d %H:%M')}")
+                if wallpaper.tags:
+                    st.caption(f"标签: {', '.join(wallpaper.tags[:3])}{'...' if len(wallpaper.tags) > 3 else ''}")
+
             if wallpaper.description:
-                with st.expander("描述"):
-                    st.write(wallpaper.description)
+                # 直接用 styled HTML 控制字体大小，避免 markdown 强调
+                safe_desc = wallpaper.description.replace('<', '&lt;').replace('>', '&gt;')
+                st.markdown(
+                    f"<div style='font-size:{desc_font}px; line-height:1.35; white-space:normal; word-break:break-word;'>" \
+                    f"{safe_desc}</div>", unsafe_allow_html=True
+                )
+
+            st.markdown("<hr style='margin:6px 0 12px 0; border:none; border-top:1px solid #444;'>", unsafe_allow_html=True)
 
 
 def display_wallpaper_checkbox_view(wallpapers: List[WallpaperFolder]) -> None:
@@ -81,8 +112,9 @@ def display_wallpaper_checkbox_view(wallpapers: List[WallpaperFolder]) -> None:
             with col1:
                 # 勾选框
                 is_selected = wallpaper.workshop_id in st.session_state.selected_wallpapers
+                # 使用非空 label 以避免 Streamlit 警告，仍然隐藏显示
                 selected = st.checkbox(
-                    "",
+                    "选择",
                     value=is_selected,
                     key=f"checkbox_{wallpaper.workshop_id}",
                     label_visibility="collapsed"
@@ -120,6 +152,9 @@ def display_wallpaper_checkbox_view(wallpapers: List[WallpaperFolder]) -> None:
                     st.write(f"修改: {wallpaper.modified_time.strftime('%Y-%m-%d %H:%M')}")
                     if wallpaper.tags:
                         st.write(f"标签: {', '.join(wallpaper.tags[:3])}{'...' if len(wallpaper.tags) > 3 else ''}")
+                if wallpaper.description:
+                    with st.expander("描述", expanded=True):
+                        st.write(wallpaper.description)
             
             st.divider()
     
@@ -255,22 +290,51 @@ def create_filter_interface(scanner, wallpapers: List[WallpaperFolder]) -> Dict[
 
 def create_display_controls(filtered_wallpapers: List[WallpaperFolder]) -> str:
     """创建显示控制界面"""
-    col1, col2, col3 = st.columns([2, 1, 1])
-    
+    cfg = get_config()
+    col1, col2, col3, col4 = st.columns([2,1,1,1])
+
     with col1:
-        display_mode = st.radio("显示模式", ["网格视图", "列表视图", "勾选视图"], horizontal=True)
+        display_mode = st.radio("显示模式", ["网格视图", "列表视图"], horizontal=True)
+
+    with col2:
+        grid_cols = st.slider(
+            "列数", 2, 8, cfg.get("display_settings.grid_columns", 3),
+            help="调整网格列数"
+        )
+        if grid_cols != cfg.get("display_settings.grid_columns"):
+            ds = cfg.get("display_settings", {})
+            ds["grid_columns"] = grid_cols
+            get_config().set("display_settings", ds)
+
+    with col3:
+        desc_font = st.slider(
+            "描述字号", 10, 24, cfg.get("display_settings.description_font_size", 12),
+            help="修改描述文字大小"
+        )
+        if desc_font != cfg.get("display_settings.description_font_size"):
+            ds = cfg.get("display_settings", {})
+            ds["description_font_size"] = desc_font
+            get_config().set("display_settings", ds)
+
+    with col4:
+        selectable = st.checkbox(
+            "可多选", value=cfg.get("display_settings.grid_selectable", True)
+        )
+        if selectable != cfg.get("display_settings.grid_selectable"):
+            ds = cfg.get("display_settings", {})
+            ds["grid_selectable"] = selectable
+            get_config().set("display_settings", ds)
     
     # 初始化选中状态
     if "selected_wallpapers" not in st.session_state:
         st.session_state.selected_wallpapers = set()
     
-    if display_mode == "勾选视图":
-        with col2:
+    if display_mode == "网格视图" and cfg.get("display_settings.grid_selectable", True):
+        with col3:
             if st.button("全选"):
                 st.session_state.selected_wallpapers.update(wp.workshop_id for wp in filtered_wallpapers)
                 st.rerun()
-        
-        with col3:
+        with col4:
             if st.button("取消全选"):
                 st.session_state.selected_wallpapers = set()
                 st.rerun()

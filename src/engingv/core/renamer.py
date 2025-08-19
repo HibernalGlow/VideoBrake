@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 import logging
 from engingv.core.models import WallpaperFolder
+from engingv.utils.config import get_config
 
 from loguru import logger
 
@@ -34,12 +35,21 @@ class FolderRenamer:
             重命名记录列表
         """
         rename_results = []
-        
+
+        # 读取配置中的长度限制
+        cfg = get_config()
+        desc_len = cfg.get("rename_settings.description_max_length", 18)
+        name_len = cfg.get("rename_settings.name_max_length", 120)
+
         for wallpaper in wallpapers:
             try:
-                new_name = wallpaper.generate_new_name(name_template)
+                new_name = wallpaper.generate_new_name(
+                    name_template,
+                    description_max_length=desc_len,
+                    name_max_length=name_len,
+                )
                 old_path = wallpaper.path
-                
+
                 if target_base_dir:
                     # 移动到目标目录
                     target_dir = Path(target_base_dir)
@@ -48,7 +58,7 @@ class FolderRenamer:
                 else:
                     # 在原位置重命名
                     new_path = old_path.parent / new_name
-                
+
                 # 避免重复命名
                 if new_path.exists() and new_path != old_path:
                     counter = 1
@@ -60,7 +70,7 @@ class FolderRenamer:
                         else:
                             new_path = old_path.parent / new_name
                         counter += 1
-                
+
                 rename_record = {
                     "workshop_id": wallpaper.workshop_id,
                     "title": wallpaper.title,
@@ -68,9 +78,9 @@ class FolderRenamer:
                     "new_path": str(new_path),
                     "old_name": wallpaper.folder_name,
                     "new_name": new_name,
-                    "status": "planned"
+                    "status": "planned",
                 }
-                
+
                 if not self.dry_run:
                     if target_base_dir:
                         # 复制文件夹
@@ -84,9 +94,9 @@ class FolderRenamer:
                         logger.info(f"已重命名: {old_path} -> {new_path}")
                 else:
                     logger.info(f"预览模式: {old_path} -> {new_path}")
-                
+
                 rename_results.append(rename_record)
-                
+
             except Exception as e:
                 error_record = {
                     "workshop_id": wallpaper.workshop_id,
@@ -96,11 +106,11 @@ class FolderRenamer:
                     "old_name": wallpaper.folder_name,
                     "new_name": "",
                     "status": "error",
-                    "error": str(e)
+                    "error": str(e),
                 }
                 rename_results.append(error_record)
                 logger.error(f"重命名失败 {wallpaper.path}: {e}")
-        
+
         self.rename_log.extend(rename_results)
         return rename_results
     
@@ -115,7 +125,7 @@ class FolderRenamer:
     
     def validate_template(self, template: str) -> List[str]:
         """验证命名模板"""
-        valid_placeholders = ["{id}", "{title}", "{original_name}", "{type}", "{rating}"]
+        valid_placeholders = ["{id}", "{title}", "{original_name}", "{type}", "{rating}", "{desc}"]
         issues = []
         
         # 检查是否包含非法字符
@@ -132,5 +142,11 @@ class FolderRenamer:
         
         if not used_placeholders:
             issues.append("模板中没有使用任何占位符")
+
+        # 提示未识别的 {xxx}
+        import re
+        for m in re.findall(r"\{[^}]+\}", template):
+            if m not in valid_placeholders:
+                issues.append(f"未识别的占位符: {m}")
         
         return issues

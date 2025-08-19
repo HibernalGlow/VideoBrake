@@ -92,25 +92,54 @@ class WallpaperFolder:
                 
         return True
     
-    def generate_new_name(self, template: str) -> str:
-        """根据模板生成新的文件夹名称"""
+    def generate_new_name(self, template: str, description_max_length: int = 18, name_max_length: int = 120) -> str:
+        """根据模板生成新的文件夹名称
+
+        Args:
+            template: 模板字符串
+            description_max_length: 描述截断长度
+            name_max_length: 最终名称最大长度（超出将截断保留后缀）
+        """
+        # 处理描述截断
+        desc_clean = (self.description or '').strip().replace('\n', ' ').replace('\r', ' ')
+        if description_max_length > 0 and len(desc_clean) > description_max_length:
+            desc_clean = desc_clean[:description_max_length] + '…'
+
         replacements = {
             "{id}": self.workshop_id,
             "{title}": self.title,
             "{original_name}": self.folder_name,
             "{type}": self.wallpaper_type,
             "{rating}": self.content_rating,
+            "{desc}": desc_clean,
         }
-        
+
         new_name = template
         for placeholder, value in replacements.items():
             new_name = new_name.replace(placeholder, str(value))
-            
+
         # 清理文件名中的非法字符
         invalid_chars = '<>:"/\\|?*'
         for char in invalid_chars:
             new_name = new_name.replace(char, "_")
-            
+
+        # 去掉首尾空格与重复空格
+        new_name = ' '.join(new_name.split())
+
+        # 限制总长度，保留结尾的id信息（如果包含 #id 或 原始id）
+        if name_max_length > 0 and len(new_name) > name_max_length:
+            # 尝试保留 #[id]
+            suffix = ''
+            if f"#{self.workshop_id}" in new_name:
+                suffix = new_name[new_name.rfind(f"#{self.workshop_id}") : ]
+            elif self.workshop_id and new_name.endswith(self.workshop_id):
+                suffix = self.workshop_id
+            available = name_max_length - len(suffix) - 1 if suffix else name_max_length
+            if available > 3:
+                new_name = new_name[:available - 1] + '…' + ((' ' + suffix) if suffix else '')
+            else:
+                new_name = new_name[:name_max_length]
+
         return new_name
     
     def to_dict(self) -> Dict[str, Any]:

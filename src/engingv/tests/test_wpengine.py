@@ -62,6 +62,42 @@ class TestWallpaperModels(unittest.TestCase):
         new_name = folder.generate_new_name(template)
         expected = "[#123456]original_name+Test Wallpaper"
         self.assertEqual(new_name, expected)
+
+    def test_description_truncate_and_placeholder(self):
+        """测试描述占位符与截断"""
+        long_desc = "这是一段非常非常长的描述内容用于测试截断逻辑ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        project_data = self.test_project_data.copy()
+        project_data["description"] = long_desc
+        folder = WallpaperFolder(
+            path=Path("/test/path"),
+            folder_name="orig",
+            workshop_id="999",
+            project_data=project_data,
+            created_time=datetime.now(),
+            modified_time=datetime.now(),
+            size=10,
+        )
+        name = folder.generate_new_name("{desc}-{id}", description_max_length=10, name_max_length=120)
+        # 10 截断 + … + -999
+        self.assertTrue(name.startswith(long_desc[:10] + "…-999"))
+
+    def test_name_length_limit(self):
+        """测试名称最大长度限制及 #id 保留"""
+        project_data = self.test_project_data.copy()
+        project_data["title"] = "A" * 200
+        folder = WallpaperFolder(
+            path=Path("/test/path"),
+            folder_name="folder",
+            workshop_id="12345",
+            project_data=project_data,
+            created_time=datetime.now(),
+            modified_time=datetime.now(),
+            size=1,
+        )
+        tpl = "[#12345]" + project_data["title"] + "-suffix"  # 已经包含 #id
+        name = folder.generate_new_name(tpl, description_max_length=0, name_max_length=60)
+        self.assertLessEqual(len(name), 60)
+        self.assertIn("#12345", name)
     
     def test_filter_matching(self):
         """测试过滤匹配"""

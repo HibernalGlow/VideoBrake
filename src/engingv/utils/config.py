@@ -18,9 +18,17 @@ DEFAULT_CONFIG = {
     "name_template": "[#{id}]{original_name}+{title}",
     "max_workers": 4,
     "recent_paths": [],
+    # 重命名相关设置
+    "rename_settings": {
+        "description_max_length": 18,  # 描述截断长度
+        "name_max_length": 120         # 最终文件夹名最大长度
+    },
     "display_settings": {
         "items_per_page": 20,
-        "default_view": "grid"
+    "default_view": "grid",
+    "grid_columns": 3,
+    "description_font_size": 12,
+    "grid_selectable": True
     },
     "export_settings": {
         "include_metadata": True,
@@ -30,7 +38,10 @@ DEFAULT_CONFIG = {
         "标准格式": "[#{id}]{original_name}+{title}",
         "简洁格式": "{title}_{id}",
         "类型分类": "{type}_{rating}_{title}",
-        "自定义": "{title}"
+    "自定义": "{title}",
+    "含描述简洁": "{title}_{desc}_{id}",
+    "含描述标准": "[#{id}]{title}+{desc}",
+    "描述优先": "{desc}_{title}_{id}"
     }
 }
 
