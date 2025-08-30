@@ -48,7 +48,7 @@ def process_single_file(file_path: str, add_nov: bool = True) -> Tuple[bool, str
         return False, f'错误 {file_path}: {e}'
 
 
-def check_and_save_duplicates(output_dir: str, scan_results: Dict[str, Any], prefix_name: str = "hb") -> None:
+def check_and_save_duplicates(output_dir: str, scan_results: Dict[str, Any], prefix_name: str = "hb") -> Dict[str, Any]:
     """
     检查带特定前缀的文件对应的无前缀文件，并保存无前缀文件路径
     
@@ -67,7 +67,11 @@ def check_and_save_duplicates(output_dir: str, scan_results: Dict[str, Any], pre
     
     if not prefix_info:
         console.print(f"\n[yellow]⚠️ 未找到名为 '{prefix_name}' 的前缀配置[/yellow]")
-        return
+        return {
+            "duplicates": [],
+            "pairs": [],
+            "prefixed_larger": []
+        }
     
     # 获取前缀字符串和描述
     prefix = prefix_info.get("prefix")
@@ -77,27 +81,34 @@ def check_and_save_duplicates(output_dir: str, scan_results: Dict[str, Any], pre
     prefixed_files = scan_results.get("prefixed_files", {}).get(prefix_name, [])
     if not prefixed_files:
         console.print(f"\n[yellow]没有找到带 '{prefix}' 前缀的视频文件，无需检查。[/yellow]")
-        return
+        return {
+            "duplicates": [],
+            "pairs": [],
+            "prefixed_larger": []
+        }
     
     nov_files = scan_results.get("nov_files", [])
     normal_files = scan_results.get("normal_files", [])
     
     # 匹配逻辑
-    duplicate_non_prefixed_files = []
-    non_prefixed_lookup = {}  # {(directory, base_name_without_ext): full_path}
+    duplicate_non_prefixed_files: List[str] = []
+    # {(directory, base_name_without_ext): {"actual": existing_file_path, "logical": output_path}}
+    non_prefixed_lookup: Dict[Tuple[str, str], Dict[str, str]] = {}
+    matched_pairs: List[Tuple[str, str]] = []  # (prefixed_path, original_actual_path)
+    prefixed_larger: List[Tuple[str, str, int, int]] = []  # (prefixed, original, size_prefixed, size_original)
     
     # 建立无前缀文件的查找字典
     for f in normal_files:
         p = Path(f)
         key = (str(p.parent), p.stem)
-        non_prefixed_lookup[key] = f
+        non_prefixed_lookup[key] = {"actual": f, "logical": f}
     
     for f in nov_files:
         p = Path(f)
         original_name_path = Path(p.stem)  # 获取 .nov 前的文件名（含原始扩展名）
         key = (str(p.parent), original_name_path.stem)  # 获取不含扩展名的基础名
-        # 存储的是添加 .nov 前的原始路径
-        non_prefixed_lookup[key] = f[:-4]
+        # 实际存在的文件是带 .nov 的路径，用于大小比较；输出时希望展示恢复前的逻辑路径
+        non_prefixed_lookup[key] = {"actual": f, "logical": f[:-4]}
     
     # 查找匹配项
     for prefixed_file in prefixed_files:
@@ -111,7 +122,20 @@ def check_and_save_duplicates(output_dir: str, scan_results: Dict[str, Any], pre
         lookup_key = (prefixed_dir, base_name_without_ext)
         
         if lookup_key in non_prefixed_lookup:
-            duplicate_non_prefixed_files.append(non_prefixed_lookup[lookup_key])
+            original_paths = non_prefixed_lookup[lookup_key]
+            duplicate_non_prefixed_files.append(original_paths["logical"])  # 输出列表使用逻辑路径
+            matched_pairs.append((prefixed_file, original_paths["actual"]))
+
+            # 比较大小（仅当两个路径都存在时）
+            try:
+                if os.path.exists(prefixed_file) and os.path.exists(original_paths["actual"]):
+                    size_pref = os.path.getsize(prefixed_file)
+                    size_orig = os.path.getsize(original_paths["actual"])
+                    if size_pref > size_orig:
+                        prefixed_larger.append((prefixed_file, original_paths["actual"], size_pref, size_orig))
+            except Exception:
+                # 忽略单个大小比较错误，继续其他项
+                pass
     
     # 处理结果
     if duplicate_non_prefixed_files:
@@ -137,6 +161,30 @@ def check_and_save_duplicates(output_dir: str, scan_results: Dict[str, Any], pre
             console.print(f"\n[red]✗ 错误：无法写入重复文件列表到 {output_path}: {e}[/red]")
     else:
         console.print(f"\n[green]✓ 未发现 '{prefix}' 文件对应的无前缀重复文件。[/green]")
+
+    # 打印“前缀文件更大”的汇总列表
+    if prefixed_larger:
+        console.print(f"\n[yellow]⚠️ 以下 {len(prefixed_larger)} 对中，带前缀文件体积大于原视频（仅同目录配对，已忽略格式差异）：[/yellow]")
+        for pref, orig, sp, so in prefixed_larger:
+            try:
+                def _fmt(n: int) -> str:
+                    for unit in ["B", "KB", "MB", "GB", "TB"]:
+                        if n < 1024 or unit == "TB":
+                            return f"{n:.1f}{unit}" if unit != "B" else f"{n}B"
+                        n /= 1024
+                    return f"{n}B"
+                console.print(f"  [yellow]•[/yellow] [+] {Path(pref).name} ({_fmt(sp)}) > {Path(orig).name} ({_fmt(so)})")
+                console.print(f"    pref: {pref}")
+                console.print(f"    orig: {orig}")
+            except Exception:
+                # 即便格式化失败也不影响主流程
+                console.print(f"  [yellow]•[/yellow] [+] {pref} > {orig}")
+
+    return {
+        "duplicates": duplicate_non_prefixed_files,
+        "pairs": matched_pairs,
+        "prefixed_larger": prefixed_larger,
+    }
 
 
 def add_nov_extension_to_files(files: List[str]) -> Tuple[int, List[str]]:
@@ -279,8 +327,13 @@ def execute_operation(scan_data: Dict[str, Any], operation: str, prefix_name: st
                     merged_scan_results["prefixed_files"][name].extend(prefixed_files)
             
             # 使用传入的前缀名称进行检查
-            check_and_save_duplicates(output_dir, merged_scan_results, prefix_name)
+            dup_result = check_and_save_duplicates(output_dir, merged_scan_results, prefix_name)
             result["output_dir"] = output_dir
+            # 增强的返回信息，便于后续处理或测试
+            result["duplicate_count"] = len(dup_result.get("duplicates", []))
+            result["pairs_count"] = len(dup_result.get("pairs", []))
+            result["prefixed_larger_count"] = len(dup_result.get("prefixed_larger", []))
+            result["prefixed_larger"] = dup_result.get("prefixed_larger", [])
     
     elif operation == 'add_nov':
         start_time = time.time()

@@ -71,18 +71,16 @@ def find_video_files(directory: str) -> Dict[str, Any]:
                     result["nov_files"].append(file_path)
                 continue
             
-            # 检查是否为带前缀的文件
+            # 检查是否为带前缀的文件（忽略视频格式差异，只要前缀匹配就记录）
             is_prefixed = False
             for prefix_info in prefixes:
                 prefix = prefix_info.get("prefix")
                 prefix_name = prefix_info.get("name")
-                
+
                 if file.startswith(prefix):
-                    base_name_with_ext = file[len(prefix):]
-                    if any(base_name_with_ext.lower().endswith(ext) for ext in video_extensions):
-                        result["prefixed_files"][prefix_name].append(file_path)
-                        is_prefixed = True
-                        break
+                    result["prefixed_files"][prefix_name].append(file_path)
+                    is_prefixed = True
+                    break
             
             # 如果不是带前缀的文件，检查是否为普通视频文件
             if not is_prefixed and any(file_lower.endswith(ext) for ext in video_extensions):
