@@ -59,7 +59,8 @@ class ConfigManager:
         return {
             "ffmpeg": {
                 "executable_path": "ffmpeg",
-                "timeout": 300
+                "timeout": 300,
+                "keep_original_output": True
             },
             "audio_formats": {
                 "mp3": {

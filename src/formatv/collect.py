@@ -2,7 +2,6 @@
 路径收集模块 - 负责从用户输入、剪贴板等获取路径
 """
 import os
-import pyperclip
 from typing import List, Dict, Any, Union
 from pathlib import Path
 from rich.console import Console
@@ -10,6 +9,7 @@ from rich.prompt import Prompt
 
 # 导入配置处理
 from .config import get_default_path
+from .input_path import get_paths, get_path
 
 # 设置控制台对象
 console = Console()
@@ -36,17 +36,11 @@ def collect_from_clipboard() -> List[str]:
     Returns:
         List[str]: 有效路径列表
     """
-    # 从剪贴板读取路径
-    clipboard_content = pyperclip.paste()
-    
-    # 分割多行路径并过滤空行
-    paths = [p.strip() for p in clipboard_content.splitlines() if p.strip()]
-    
+    # 兼容旧接口，直接用 get_paths 的剪贴板优先逻辑
+    paths = get_paths()
     if not paths:
-        console.print("[yellow]⚠️ 剪贴板中没有有效的路径！[/yellow]")
         return []
-        
-    return [normalize_path(p) for p in paths]
+    return paths
 
 
 def collect_from_input(multi_path: bool = True, default_path: str = None) -> List[str]:
@@ -114,6 +108,17 @@ def collect_from_input(multi_path: bool = True, default_path: str = None) -> Lis
     # 显示收集到的路径数量
     console.print(f"[green]✓ 收集到 {len(valid_paths)} 个有效路径[/green]")
     return valid_paths
+    # 兼容旧接口，multi_path决定用get_paths还是get_path
+    if multi_path:
+        paths = get_paths()
+        if not paths:
+            return []
+        return paths
+    else:
+        path = get_path()
+        if not path:
+            return []
+        return [path]
 
 
 def collect_paths(use_clipboard: bool = False, multi_path: bool = True) -> Dict[str, Any]:
@@ -121,7 +126,7 @@ def collect_paths(use_clipboard: bool = False, multi_path: bool = True) -> Dict[
     收集路径并组织成处理数据
     
     Args:
-        use_clipboard: 是否从剪贴板读取路径
+        use_clipboard: 是否从剪贴板读取路径（已废弃，使用 get_paths 的交互式逻辑）
         multi_path: 是否启用多路径输入模式
         
     Returns:
@@ -132,15 +137,13 @@ def collect_paths(use_clipboard: bool = False, multi_path: bool = True) -> Dict[
             "source": "clipboard" 或 "input"
         }
     """
-    paths = []
-    source = "clipboard" if use_clipboard else "input"
+    # 使用 synct 风格的交互式路径获取
+    paths = get_paths()
     
-    if use_clipboard:
-        paths = collect_from_clipboard()
-    else:
-        paths = collect_from_input(multi_path=multi_path)
+    if not paths:
+        return {"paths": [], "count": 0, "source": "none"}
     
-    # 过滤掉非目录路径
+    # 过滤掉非目录路径（虽然 get_paths 已经验证过，但为了安全）
     directory_paths = []
     for path in paths:
         if os.path.isdir(path):
@@ -151,7 +154,30 @@ def collect_paths(use_clipboard: bool = False, multi_path: bool = True) -> Dict[
     result = {
         "paths": directory_paths,
         "count": len(directory_paths),
-        "source": source
+        "source": "interactive"  # 统一为交互式输入
     }
     
+    return result
+    # 统一入口，直接用 get_paths 或 get_path
+    if multi_path:
+        paths = get_paths()
+        source = "get_paths"
+    else:
+        path = get_path()
+        paths = [path] if path else []
+        source = "get_path"
+
+    # 过滤掉非目录路径
+    directory_paths = []
+    for path in (paths or []):
+        if path and os.path.isdir(path):
+            directory_paths.append(path)
+        elif path:
+            console.print(f"[red]✗ 提供的路径不是一个目录: {path}[/red]")
+
+    result = {
+        "paths": directory_paths,
+        "count": len(directory_paths),
+        "source": source
+    }
     return result

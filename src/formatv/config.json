@@ -1,6 +1,6 @@
 {
     "video_extensions": [
-        ".mp4", ".avi", ".mkv", ".wmv", ".mov", ".flv", ".webm", 
+        ".mp4", ".gif", ".avi", ".mkv", ".wmv", ".mov", ".flv", ".webm", 
         ".m4v", ".ts", ".mts", ".mpeg", ".mpg", ".m2ts"
     ],    
     "prefixes": [
@@ -10,7 +10,7 @@
             "description": "HandBrake转码文件"
         }
     ],
-    "default_path": "E:\\1EHV",
+    "default_path": "E:\\1Hub\\EH\\1EHV",
     "output_filename": "duplicate_videos.txt"
     ,
     "blacklist": ["[bili]","temp"]

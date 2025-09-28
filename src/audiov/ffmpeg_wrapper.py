@@ -22,6 +22,7 @@ class FFmpegWrapper:
         """初始化 FFmpeg 包装器"""
         self.ffmpeg_path = config_manager.get_ffmpeg_path()
         self.timeout = config_manager.get('ffmpeg.timeout', 300)
+        self.keep_original_output = config_manager.get('ffmpeg.keep_original_output', True)
     
     def check_ffmpeg_available(self) -> bool:
         """
@@ -58,6 +59,9 @@ class FFmpegWrapper:
                 self.ffmpeg_path, '-i', video_path,
                 '-f', 'null', '-'
             ]
+            
+            if not self.keep_original_output:
+                cmd.extend(['-hide_banner', '-loglevel', 'error'])
             
             result = subprocess.run(
                 cmd,
@@ -175,9 +179,9 @@ class FFmpegWrapper:
                     '-i', video_path,
                     '-vn',  # 不包含视频
                     '-acodec', 'copy',  # 直接复制音频流
-                    '-hide_banner',
-                    '-loglevel', 'error'
                 ]
+                if not self.keep_original_output:
+                    cmd.extend(['-hide_banner', '-loglevel', 'error'])
             else:
                 # 普通模式：重新编码
                 cmd = [
@@ -185,9 +189,10 @@ class FFmpegWrapper:
                     '-i', video_path,
                     '-vn',  # 不包含视频
                     '-acodec', codec,
-                    '-hide_banner',
-                    '-loglevel', 'error'
                 ]
+                
+                if not self.keep_original_output:
+                    cmd.extend(['-hide_banner', '-loglevel', 'error'])
                 
                 # 添加质量参数
                 if quality:
@@ -238,6 +243,12 @@ class FFmpegWrapper:
                 
                 if process.returncode == 0:
                     console.print(f"✅ 音频提取成功: {Path(output_path).name}", style="green")
+                    if self.keep_original_output and (stdout or stderr):
+                        console.print("📄 FFmpeg 输出:", style="dim")
+                        if stdout:
+                            console.print(stdout, style="dim")
+                        if stderr:
+                            console.print(stderr, style="dim")
                     return True, ""
                 else:
                     # 清理错误信息
@@ -268,6 +279,10 @@ class FFmpegWrapper:
         """
         if not error_text:
             return "未知错误"
+        
+        # 如果配置为保留原始输出，直接返回原始错误文本
+        if self.keep_original_output:
+            return error_text
         
         # 常见错误信息的简化
         error_patterns = [
@@ -372,8 +387,10 @@ class FFmpegWrapper:
             cmd = [
                 self.ffmpeg_path, '-i', video_path,
                 '-f', 'null', '-',
-                '-hide_banner', '-loglevel', 'error'
             ]
+            
+            if not self.keep_original_output:
+                cmd.extend(['-hide_banner', '-loglevel', 'error'])
             
             result = subprocess.run(
                 cmd,

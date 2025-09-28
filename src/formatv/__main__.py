@@ -117,7 +117,7 @@ def interactive_mode() -> None:
         return
     
     # 收集路径
-    use_clipboard = Confirm.ask("是否从剪贴板读取路径？", default=False)
+    use_clipboard = True  # 默认使用剪贴板
     path_data = collect_paths(use_clipboard=use_clipboard, multi_path=True)
     
     if not path_data.get("paths", []):
@@ -157,11 +157,8 @@ def command_line_mode(args: argparse.Namespace) -> None:
     # 显示标题
     console.print(Panel.fit("[bold cyan]视频文件格式批量处理工具[/bold cyan]"))
     
-    # 收集路径
-    use_clipboard = args.clipboard
-    multi_path = not args.single
-    
-    path_data = collect_paths(use_clipboard=use_clipboard, multi_path=multi_path)
+    # 收集路径（现在使用交互式输入）
+    path_data = collect_paths()  # 移除 use_clipboard 和 multi_path 参数
     if not path_data.get("paths", []):
         return  # 无有效路径，直接返回
     
@@ -211,10 +208,6 @@ def main() -> None:
     """主函数"""
     # 处理命令行参数
     parser = argparse.ArgumentParser(description="视频文件格式批量处理工具")
-    parser.add_argument('-c', '--clipboard', action='store_true', 
-                       help='从剪贴板读取路径')
-    parser.add_argument('-s', '--single', action='store_true', 
-                       help='禁用多路径输入模式，仅输入单个路径')
     parser.add_argument('-i', '--interactive', action='store_true',
                        help='启用交互式模式')
     parser.add_argument('-r', '--recursive', action='store_true',
@@ -234,10 +227,6 @@ def main() -> None:
                        help='指定用于检查重复的前缀名称，默认为"hb"')
     
     args = parser.parse_args()
-    
-    # 显示多路径提示
-    if not args.single and not args.clipboard:
-        console.print("[blue]多路径输入模式已启用，每行输入一个路径，输入空行结束[/blue]")
     
     # 选择运行模式
     if args.interactive:

@@ -19,7 +19,7 @@ DEFAULT_CONFIG = {
             "description": "HandBrake转码文件"
         }
     ],
-    "default_path": "E:\\1EHV",
+    "default_path": "E:\\1Hub\\EH\\1EHV",
     "output_filename": "duplicate_videos.txt"
 }
 
