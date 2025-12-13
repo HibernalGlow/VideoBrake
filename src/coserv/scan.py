@@ -12,9 +12,9 @@ from datetime import datetime
 from typing import List, Dict
 from tqdm import tqdm
 
-from config import Config
-from frame_extractor import FrameExtractor
-from file_organizer import FileOrganizer
+from .config import Config
+from .frame_extractor import FrameExtractor
+from .file_organizer import FileOrganizer
 
 try:
     from rich.console import Console

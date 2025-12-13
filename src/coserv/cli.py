@@ -112,7 +112,7 @@ def run_scan_interactive():
         save_json_input = input("是否保存 JSON 文件？[y/N]: ").strip().lower()
         save_json = save_json_input == 'y'
     
-    from scan import FolderScanner
+    from .scan import FolderScanner
     try:
         scanner = FolderScanner(
             target_dir,
@@ -165,7 +165,7 @@ def run_process_interactive():
         dry_run_input = input("测试模式（不实际移动/复制文件）？[Y/n]: ").strip().lower()
         dry_run = dry_run_input != 'n'
     
-    from process import BatchProcessor
+    from .process import BatchProcessor
     try:
         processor = BatchProcessor(scan_file, mode=mode)
         processor.process_all(dry_run=dry_run)
@@ -223,7 +223,7 @@ def run_organize_interactive():
         dry_run_input = input("测试模式（不实际移动文件）？[Y/n]: ").strip().lower()
         dry_run = dry_run_input != 'n'
     
-    from organize import VideoOrganizer
+    from .organize import VideoOrganizer
     try:
         organizer = VideoOrganizer(video_dir)
         organizer.organize_all(dry_run=dry_run)
@@ -297,7 +297,7 @@ def main():
     # 执行子命令
     # === 新工作流程命令 ===
     if args.command == 'scan':
-        from scan import FolderScanner
+        from .scan import FolderScanner
         scanner = FolderScanner(
             args.target_dir, 
             args.output,
@@ -308,7 +308,7 @@ def main():
         scanner.scan_all_folders(limit=args.limit)
     
     elif args.command == 'identify':
-        from identify import BatchIdentifier
+        from .identify import BatchIdentifier
         identifier = BatchIdentifier(args.scan_file, args.output)
         identifier.identify_all(
             skip_identified=not args.no_skip,
@@ -316,13 +316,13 @@ def main():
         )
     
     elif args.command == 'process':
-        from process import BatchProcessor
+        from .process import BatchProcessor
         processor = BatchProcessor(args.scan_file, args.output, args.mode)
         processor.process_all(dry_run=args.dry_run)
     
     # === 旧工作流程命令 ===
     elif args.command == 'prepare':
-        from prepare import VideoPreparer
+        from .prepare import VideoPreparer
         preparer = VideoPreparer(args.video_dir, args.output)
         preparer.prepare_all(limit=args.limit)
     

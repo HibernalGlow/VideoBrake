@@ -13,9 +13,9 @@ from pathlib import Path
 from tqdm import tqdm
 import shutil
 
-from config import Config
-from frame_extractor import FrameExtractor
-from file_organizer import FileOrganizer
+from .config import Config
+from .frame_extractor import FrameExtractor
+from .file_organizer import FileOrganizer
 
 
 class VideoPreparer:

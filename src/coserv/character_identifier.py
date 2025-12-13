@@ -13,7 +13,7 @@ import numpy as np
 import cv2
 from PIL import Image
 
-from config import Config
+from .config import Config
 
 
 class CharacterIdentifier:

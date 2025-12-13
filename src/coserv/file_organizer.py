@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Dict, Optional
 import re
 
-from config import Config
+from .config import Config
 
 
 class FileOrganizer:

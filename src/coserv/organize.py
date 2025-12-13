@@ -11,8 +11,8 @@ import argparse
 from pathlib import Path
 from typing import Dict, List
 
-from config import Config
-from file_organizer import FileOrganizer
+from .config import Config
+from .file_organizer import FileOrganizer
 
 
 class VideoOrganizer:

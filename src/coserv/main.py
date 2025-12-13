@@ -9,10 +9,10 @@ from pathlib import Path
 from tqdm import tqdm
 import time
 
-from config import Config
-from frame_extractor import FrameExtractor
-from character_identifier import CharacterIdentifier
-from file_organizer import FileOrganizer
+from .config import Config
+from .frame_extractor import FrameExtractor
+from .character_identifier import CharacterIdentifier
+from .file_organizer import FileOrganizer
 
 
 class VideoClassifier:

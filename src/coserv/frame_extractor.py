@@ -11,7 +11,7 @@ import imagehash
 from pathlib import Path
 from typing import List
 
-from config import Config
+from .config import Config
 
 
 class FrameExtractor:

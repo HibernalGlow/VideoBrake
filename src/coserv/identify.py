@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, List
 from tqdm import tqdm
 
-from config import Config
+from .config import Config
 from character_identifier import CharacterIdentifier
 
 try:

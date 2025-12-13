@@ -12,8 +12,8 @@ from pathlib import Path
 from typing import Dict, List
 from tqdm import tqdm
 
-from config import Config
-from file_organizer import FileOrganizer
+from .config import Config
+from .file_organizer import FileOrganizer
 
 try:
     from rich.console import Console
