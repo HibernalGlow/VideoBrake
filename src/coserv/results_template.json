@@ -1,0 +1,52 @@
+[
+  {
+    "video_name": "示例视频1",
+    "video_path": "D:\\Videos\\example1.mp4",
+    "frames_dir": "示例视频1/frames",
+    "frames": [
+      "示例视频1/frames/frame_01.jpg",
+      "示例视频1/frames/frame_02.jpg"
+    ],
+    "frame_count": 2,
+    "status": "identified",
+    "character_info": {
+      "character": "优菈",
+      "source": "原神"
+    },
+    "notes": "可选：添加备注"
+  },
+  {
+    "video_name": "示例视频2",
+    "video_path": "D:\\Videos\\example2.mp4",
+    "frames_dir": "示例视频2/frames",
+    "frames": [
+      "示例视频2/frames/frame_01.jpg"
+    ],
+    "frame_count": 1,
+    "status": "identified",
+    "character_info": {
+      "character": "2B",
+      "source": "尼尔:自动人形"
+    }
+  },
+  {
+    "video_name": "示例视频3_无法识别",
+    "video_path": "D:\\Videos\\example3.mp4",
+    "frames_dir": "示例视频3_无法识别/frames",
+    "frames": [],
+    "frame_count": 0,
+    "status": "pending",
+    "character_info": null,
+    "notes": "无法识别，将移动到'未识别角色'文件夹"
+  },
+  {
+    "video_name": "示例视频4_跳过",
+    "video_path": "D:\\Videos\\example4.mp4",
+    "frames_dir": "示例视频4_跳过/frames",
+    "frames": [],
+    "frame_count": 0,
+    "status": "skipped",
+    "character_info": null,
+    "notes": "用户选择跳过，不处理"
+  }
+]

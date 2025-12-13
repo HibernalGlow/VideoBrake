@@ -1,37 +1,25 @@
 """
-智能截图模块
-实现三重过滤机制：
-1. 场景检测 - 提取不同机位的画面
-2. 人脸检测 - 过滤无人脸的画面
-3. 视觉去重 - 剔除相似画面
+快速截图模块
+使用随机采样 + 去重，速度最快
 """
 
 import cv2
 import numpy as np
-import mediapipe as mp
+import random
 from PIL import Image
 import imagehash
 from pathlib import Path
-from typing import List, Tuple, Optional
-from scenedetect import VideoManager, SceneManager
-from scenedetect.detectors import ContentDetector
+from typing import List
 
 from config import Config
 
 
 class FrameExtractor:
-    """智能帧提取器"""
+    """快速帧提取器"""
     
     def __init__(self):
-        """初始化检测器"""
-        # 初始化 MediaPipe 人脸检测
-        self.mp_face_detection = mp.solutions.face_detection
-        self.face_detection = self.mp_face_detection.FaceDetection(
-            model_selection=1,  # 0=近距离模型, 1=远距离模型
-            min_detection_confidence=Config.FACE_DETECTION_CONFIDENCE
-        )
-        
-        print("✓ 人脸检测器初始化完成")
+        """初始化提取器"""
+        print("✓ 快速帧提取器初始化完成")
     
     def extract_best_frames(
         self, 
@@ -39,7 +27,7 @@ class FrameExtractor:
         max_frames: int = None
     ) -> List[np.ndarray]:
         """
-        提取视频中最佳的帧
+        快速提取视频帧（随机采样）
         
         Args:
             video_path: 视频文件路径
@@ -51,93 +39,26 @@ class FrameExtractor:
         if max_frames is None:
             max_frames = Config.MAX_FRAMES_PER_VIDEO
         
-        print(f"\n🎬 开始处理视频: {Path(video_path).name}")
+        print(f"🎬 处理: {Path(video_path).name}")
         
-        # 第一步：场景检测
-        scene_frames = self._detect_scenes(video_path)
-        if not scene_frames:
-            print("  ⚠ 未检测到场景，使用均匀采样")
-            scene_frames = self._uniform_sample(video_path, max_frames * 2)
+        # 随机采样
+        sampled_frames = self._random_sample(video_path, max_frames * 3)
         
-        print(f"  ✓ 场景检测完成，获得 {len(scene_frames)} 个候选帧")
-        
-        # 第二步：人脸过滤
-        face_frames = self._filter_by_face(scene_frames)
-        print(f"  ✓ 人脸过滤完成，保留 {len(face_frames)} 个有人脸的帧")
-        
-        if not face_frames:
-            print("  ⚠ 未检测到人脸，返回空列表")
+        if not sampled_frames:
+            print("  ❌ 未能提取帧")
             return []
         
-        # 第三步：视觉去重
-        unique_frames = self._deduplicate_frames(face_frames, max_frames)
-        print(f"  ✓ 去重完成，最终保留 {len(unique_frames)} 个帧")
+        print(f"  ✓ 采样: {len(sampled_frames)} 帧")
+        
+        # 去重
+        unique_frames = self._deduplicate_frames(sampled_frames, max_frames)
+        print(f"  ✓ 去重后: {len(unique_frames)} 帧")
         
         return unique_frames
     
-    def _detect_scenes(self, video_path: str) -> List[np.ndarray]:
+    def _random_sample(self, video_path: str, num_frames: int) -> List[np.ndarray]:
         """
-        使用 PySceneDetect 检测场景切换点
-        
-        Returns:
-            场景关键帧列表
-        """
-        try:
-            # 初始化视频管理器
-            video_manager = VideoManager([video_path])
-            scene_manager = SceneManager()
-            
-            # 添加内容检测器
-            scene_manager.add_detector(
-                ContentDetector(threshold=Config.SCENE_THRESHOLD)
-            )
-            
-            # 开始检测
-            video_manager.start()
-            scene_manager.detect_scenes(frame_source=video_manager)
-            
-            # 获取场景列表
-            scene_list = scene_manager.get_scene_list()
-            
-            # 打开视频以读取帧
-            cap = cv2.VideoCapture(video_path)
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            
-            frames = []
-            for i, (start_time, end_time) in enumerate(scene_list):
-                # 计算场景长度
-                scene_duration = (end_time - start_time).get_seconds()
-                
-                # 跳过太短的场景
-                if scene_duration < Config.MIN_SCENE_LENGTH:
-                    continue
-                
-                # 从场景中间提取帧
-                mid_time = start_time + (end_time - start_time) / 2
-                frame_num = int(mid_time.get_frames())
-                
-                # 读取帧
-                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
-                ret, frame = cap.read()
-                
-                if ret and frame is not None:
-                    # 可选：缩放以加速处理
-                    if Config.PROCESS_IMAGE_WIDTH:
-                        frame = self._resize_frame(frame, Config.PROCESS_IMAGE_WIDTH)
-                    frames.append(frame)
-            
-            cap.release()
-            video_manager.release()
-            
-            return frames
-            
-        except Exception as e:
-            print(f"  ⚠ 场景检测失败: {e}")
-            return []
-    
-    def _uniform_sample(self, video_path: str, num_frames: int) -> List[np.ndarray]:
-        """
-        均匀采样视频帧（备用方案）
+        随机采样视频帧
         
         Args:
             video_path: 视频路径
@@ -149,62 +70,38 @@ class FrameExtractor:
         cap = cv2.VideoCapture(video_path)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         
-        # 计算采样间隔
-        interval = max(1, total_frames // num_frames)
+        if total_frames == 0:
+            cap.release()
+            return []
+        
+        # 生成随机帧位置（跳过前10%和后10%，避免片头片尾）
+        start_frame = int(total_frames * 0.1)
+        end_frame = int(total_frames * 0.9)
+        
+        if end_frame <= start_frame:
+            start_frame = 0
+            end_frame = total_frames
+        
+        # 随机选择帧位置
+        frame_positions = random.sample(
+            range(start_frame, end_frame),
+            min(num_frames, end_frame - start_frame)
+        )
+        frame_positions.sort()  # 排序以顺序读取，提高效率
         
         frames = []
-        for i in range(0, total_frames, interval):
-            cap.set(cv2.CAP_PROP_POS_FRAMES, i)
+        for frame_num in frame_positions:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_num)
             ret, frame = cap.read()
             
             if ret and frame is not None:
+                # 可选：缩放以节省内存
                 if Config.PROCESS_IMAGE_WIDTH:
                     frame = self._resize_frame(frame, Config.PROCESS_IMAGE_WIDTH)
                 frames.append(frame)
-                
-            if len(frames) >= num_frames:
-                break
         
         cap.release()
         return frames
-    
-    def _filter_by_face(self, frames: List[np.ndarray]) -> List[np.ndarray]:
-        """
-        过滤出包含人脸的帧
-        
-        Args:
-            frames: 输入帧列表
-            
-        Returns:
-            包含人脸的帧列表
-        """
-        face_frames = []
-        
-        for frame in frames:
-            # 转换为 RGB（MediaPipe 需要）
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-            # 检测人脸
-            results = self.face_detection.process(rgb_frame)
-            
-            if results.detections:
-                # 检查人脸大小
-                has_valid_face = False
-                h, w = frame.shape[:2]
-                
-                for detection in results.detections:
-                    bbox = detection.location_data.relative_bounding_box
-                    face_width = bbox.width
-                    
-                    # 人脸宽度占图像的比例
-                    if face_width >= Config.MIN_FACE_SIZE_RATIO:
-                        has_valid_face = True
-                        break
-                
-                if has_valid_face:
-                    face_frames.append(frame)
-        
-        return face_frames
     
     def _deduplicate_frames(
         self, 
@@ -274,31 +171,6 @@ class FrameExtractor:
         aspect_ratio = h / w
         new_height = int(target_width * aspect_ratio)
         return cv2.resize(frame, (target_width, new_height), interpolation=cv2.INTER_AREA)
-    
-    @staticmethod
-    def frame_to_bytes(frame: np.ndarray, quality: int = None) -> bytes:
-        """
-        将帧转换为 JPEG 字节
-        
-        Args:
-            frame: BGR 格式的帧
-            quality: JPEG 质量 (1-100)
-            
-        Returns:
-            JPEG 字节数据
-        """
-        if quality is None:
-            quality = Config.UPLOAD_IMAGE_QUALITY
-        
-        # 编码为 JPEG
-        encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-        _, buffer = cv2.imencode('.jpg', frame, encode_param)
-        return buffer.tobytes()
-    
-    def __del__(self):
-        """清理资源"""
-        if hasattr(self, 'face_detection'):
-            self.face_detection.close()
 
 
 if __name__ == "__main__":
@@ -324,3 +196,4 @@ if __name__ == "__main__":
         print(f"已保存: {output_path}")
     
     print(f"\n✓ 测试完成，共提取 {len(frames)} 帧")
+

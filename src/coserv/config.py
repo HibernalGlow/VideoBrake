@@ -14,16 +14,25 @@ load_dotenv()
 class Config:
     """系统配置类"""
     
-    # ==================== API 配置 ====================
+    # ==================== Gemini CLI 配置 ====================
+    # Gemini CLI 工具路径（会自动在 PATH 中查找）
+    GEMINI_CLI_PATH = os.getenv("GEMINI_CLI_PATH", "gemini")
+    
+    # API Key（可选，某些 CLI 版本可能需要）
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    
+    # 使用的模型
     GEMINI_MODEL = "gemini-1.5-flash"
+    
+    # CLI 调用超时时间（秒）
+    CLI_TIMEOUT = 30
     
     # ==================== 视频处理配置 ====================
     # 场景检测阈值（越低越敏感，检测到更多场景切换）
     SCENE_THRESHOLD = 27.0
     
     # 每个视频最多提取的帧数
-    MAX_FRAMES_PER_VIDEO = 10
+    MAX_FRAMES_PER_VIDEO = 3
     
     # 最小场景长度（秒）- 避免太短的场景
     MIN_SCENE_LENGTH = 2.0
@@ -84,17 +93,7 @@ class Config:
     @classmethod
     def validate(cls):
         """验证配置是否正确"""
-        errors = []
-        
-        if not cls.GEMINI_API_KEY:
-            errors.append("❌ 未设置 GEMINI_API_KEY，请在 .env 文件中配置")
-        
-        if errors:
-            print("\n配置错误：")
-            for error in errors:
-                print(f"  {error}")
-            return False
-        
+        # 使用 CLI 工具，配置检查交给运行时处理
         return True
     
     @classmethod
@@ -103,13 +102,14 @@ class Config:
         print("\n" + "="*60)
         print("📋 当前配置")
         print("="*60)
+        print(f"Gemini CLI: {cls.GEMINI_CLI_PATH}")
         print(f"AI 模型: {cls.GEMINI_MODEL}")
+        print(f"CLI 超时: {cls.CLI_TIMEOUT}秒")
         print(f"场景检测阈值: {cls.SCENE_THRESHOLD}")
         print(f"每视频最大帧数: {cls.MAX_FRAMES_PER_VIDEO}")
         print(f"人脸检测置信度: {cls.FACE_DETECTION_CONFIDENCE}")
         print(f"哈希差异阈值: {cls.HASH_DIFF_THRESHOLD}")
         print(f"文件操作模式: {'移动' if cls.MOVE_FILES else '复制'}")
-        print(f"API Key: {'已设置 ✓' if cls.GEMINI_API_KEY else '未设置 ✗'}")
         print("="*60 + "\n")
 
 

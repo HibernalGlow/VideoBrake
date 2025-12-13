@@ -1,0 +1,24 @@
+[project]
+name = "coserv"
+version = "0.1.0"
+description = "Coser 视频自动分类系统 - 智能识别和整理视频"
+requires-python = ">=3.8"
+
+dependencies = [
+    # 视频处理
+    "opencv-python>=4.8.0",
+    "scenedetect[opencv]>=0.6.2",
+    
+    # 人脸检测
+    "mediapipe>=0.10.0",
+    
+    # 图像去重
+    "imagehash>=4.3.1",
+    "Pillow>=10.0.0",
+    
+    # 环境变量
+    "python-dotenv>=1.0.0",
+    
+    # 工具库
+    "tqdm>=4.66.0",
+]

@@ -36,25 +36,35 @@
 
 ### 1. 安装依赖
 
+**Python 依赖：**
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 配置 API Key
+**Gemini CLI 工具：**
 
-复制环境变量模板：
+```bash
+npm install -g @google/generative-ai-cli
+```
+
+验证安装：
+
+```bash
+gemini --version
+```
+
+> 💡 详细安装指南请查看 `安装Gemini_CLI.md`
+
+### 2. 配置（可选）
+
+通常无需配置，直接使用即可。如需自定义：
 
 ```bash
 copy .env.example .env
 ```
 
-编辑 `.env` 文件，填入你的 Gemini API Key：
-
-```env
-GEMINI_API_KEY=你的API密钥
-```
-
-> 💡 获取 API Key: [https://makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey)
+> 本项目使用 **Gemini CLI** 命令行工具，无需 API Key（CLI 内部处理）
 
 ### 3. 运行系统
 
@@ -267,11 +277,18 @@ pip install opencv-python numpy
 
 ### 运行问题
 
-**API 请求失败**：
+**CLI 不可用 ("gemini: command not found")**：
 
-- 检查网络连接
-- 验证 API Key 是否正确
-- 如需代理，在 `.env` 中配置 `HTTP_PROXY`
+- 确认已安装：`npm list -g @google/generative-ai-cli`
+- 重启终端
+- 或在 `.env` 中指定完整路径
+
+**CLI 调用超时或失败**：
+
+- 检查网络连接（需访问 Google API）
+- 配置代理：在 `.env` 中设置 `HTTP_PROXY`
+- 增加 `CLI_TIMEOUT`（在 `config.py` 中）
+- 测试 CLI：`gemini generate --prompt "你好"`
 
 **未检测到人脸**：
 

@@ -1,0 +1,14 @@
+[
+  {
+    "video_name": "T38-049",
+    "video_path": "E:\\BaiduNetdiskDownload\\T38-049\\T38-049.mp4",
+    "frames_dir": "T38-049\\frames",
+    "frames": [
+      "T38-049\\frames\\frame_01.jpg",
+      "T38-049\\frames\\frame_02.jpg",
+      "T38-049\\frames\\frame_03.jpg"
+    ],
+    "frame_count": 3,
+    "status": "pending"
+  }
+]
