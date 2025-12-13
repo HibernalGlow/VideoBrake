@@ -7,10 +7,6 @@ requires-python = ">=3.8"
 dependencies = [
     # 视频处理
     "opencv-python>=4.8.0",
-    "scenedetect[opencv]>=0.6.2",
-    
-    # 人脸检测
-    "mediapipe>=0.10.0",
     
     # 图像去重
     "imagehash>=4.3.1",
@@ -21,4 +17,10 @@ dependencies = [
     
     # 工具库
     "tqdm>=4.66.0",
+    
+    # CLI界面
+    "rich>=13.0.0",
 ]
+
+[project.scripts]
+coserv = "coserv.cli:main"

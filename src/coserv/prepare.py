@@ -8,6 +8,7 @@
 
 import json
 import argparse
+import io
 from pathlib import Path
 from tqdm import tqdm
 import shutil
@@ -104,13 +105,28 @@ class VideoPreparer:
         # 保存所有帧
         saved_frames = []
         for i, frame in enumerate(frames):
-            frame_path = frames_dir / f"frame_{i+1:02d}.jpg"
+            frame_path = frames_dir / f"frame_{i+1:02d}.webp"
             
+            # 转换为RGB（webp需要）
             import cv2
-            cv2.imwrite(str(frame_path), frame, [
-                int(cv2.IMWRITE_JPEG_QUALITY), 
-                Config.UPLOAD_IMAGE_QUALITY
-            ])
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            from PIL import Image
+            pil_image = Image.fromarray(rgb_frame)
+            
+            # 压缩到目标大小（25KB）
+            quality = 80
+            while quality > 10:
+                buffer = io.BytesIO()
+                pil_image.save(buffer, format='WEBP', quality=quality)
+                size_kb = buffer.tell() / 1024
+                
+                if size_kb <= 25 or quality <= 20:
+                    # 保存到文件
+                    with open(frame_path, 'wb') as f:
+                        f.write(buffer.getvalue())
+                    break
+                
+                quality -= 10
             
             saved_frames.append(str(frame_path.relative_to(self.output_dir)))
         
