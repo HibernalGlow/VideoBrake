@@ -30,27 +30,38 @@ class FolderScanner:
     
     def __init__(self, target_dir: str, output_dir: str = None, 
                  max_frames: int = 5, image_size_kb: int = 25, 
-                 save_json: bool = True):
+                 save_json: bool = False):
         """
         初始化扫描器
         
         Args:
-            target_dir: 目标文件夹目录
+            target_dir: 目标文件夹目录或视频文件路径
             output_dir: 输出目录（默认为视频目录下的 coserv_output）
             max_frames: 每个文件夹提取的最大图片数量（默认 5）
             image_size_kb: 图片压缩目标大小（KB，默认 25）
-            save_json: 是否保存 JSON 文件（默认 True）
+            save_json: 是否保存 JSON 文件（默认 False）
         """
-        self.target_dir = Path(target_dir).resolve()
+        self.target_path = Path(target_dir).resolve()
+        
+        # 判断是文件还是目录
+        if self.target_path.is_file():
+            # 如果是单个视频文件
+            self.is_single_file = True
+            self.target_dir = self.target_path.parent
+            self.single_video = self.target_path
+        elif self.target_path.is_dir():
+            # 如果是目录
+            self.is_single_file = False
+            self.target_dir = self.target_path
+            self.single_video = None
+        else:
+            raise ValueError(f"路径不存在: {target_dir}")
         
         # 如果未指定输出目录，默认使用视频目录下的 coserv_output
         if output_dir is None:
             self.output_dir = self.target_dir / "coserv_output"
         else:
             self.output_dir = Path(output_dir).resolve()
-        
-        if not self.target_dir.exists():
-            raise ValueError(f"目标目录不存在: {target_dir}")
         
         # 创建输出目录
         self.output_dir.mkdir(exist_ok=True)
@@ -79,11 +90,30 @@ class FolderScanner:
     
     def scan_all_folders(self, limit: int = None):
         """
-        扫描所有文件夹
+        扫描所有文件夹或处理单个视频
         
         Args:
-            limit: 限制处理数量
+            limit: 限制处理数量（仅对文件夹模式有效）
         """
+        # 如果是单个视频文件
+        if self.is_single_file:
+            print(f"\n处理单个视频文件: {self.single_video.name}")
+            print(f"配置：提取 {self.max_frames} 张图片，目标大小 {self.image_size_kb}KB\n")
+            
+            try:
+                self.process_single_video(self.single_video)
+            except Exception as e:
+                print(f"❌ 处理失败: {e}")
+            
+            # 保存扫描结果
+            if self.save_json:
+                self.save_scan_data()
+            
+            # 打印摘要
+            self.print_summary()
+            return
+        
+        # 文件夹模式
         # 获取所有子文件夹（只扫描一级子目录）
         folders = [f for f in self.target_dir.iterdir() if f.is_dir()]
         
@@ -197,6 +227,77 @@ class FolderScanner:
         
         self.scan_data["folders"].append(folder_info)
     
+    def process_single_video(self, video_path: Path):
+        """
+        处理单个视频文件
+        
+        Args:
+            video_path: 视频文件路径
+        """
+        video_name = video_path.stem
+        
+        # 创建帧输出目录（直接在 output_dir 下，不需要 frames_时间戳 子目录）
+        frames_output_dir = self.output_dir / video_name
+        frames_output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 提取关键帧
+        frames = self.frame_extractor.extract_best_frames(str(video_path))
+        
+        if not frames:
+            print("  ⚠ 未提取到有效帧")
+            return
+        
+        # 限制帧数量
+        frames = frames[:self.max_frames]
+        
+        # 保存关键帧
+        saved_frames = []
+        for i, frame in enumerate(frames):
+            frame_filename = f"frame_{i+1:02d}.webp"
+            frame_path = frames_output_dir / frame_filename
+            
+            # 保存为 WebP 格式
+            import cv2
+            from PIL import Image
+            import io
+            
+            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            pil_image = Image.fromarray(rgb_frame)
+            
+            # 压缩到目标大小
+            quality = 80
+            while quality > 10:
+                buffer = io.BytesIO()
+                pil_image.save(buffer, format='WEBP', quality=quality)
+                size_kb = buffer.tell() / 1024
+                
+                if size_kb <= self.image_size_kb or quality <= 20:
+                    with open(frame_path, 'wb') as f:
+                        f.write(buffer.getvalue())
+                    break
+                
+                quality -= 10
+            
+            saved_frames.append(str(frame_path.relative_to(self.output_dir)))
+        
+        print(f"  ✓ 提取了 {len(frames)} 个关键帧")
+        
+        # 记录视频信息（作为单个"文件夹"）
+        folder_info = {
+            "folder_name": video_name,
+            "folder_path": str(video_path.parent),
+            "video_count": 1,
+            "video_files": [video_path.name],
+            "representative_video": video_path.name,
+            "frames": saved_frames,
+            "frame_count": len(saved_frames),
+            "status": "pending",
+            "character_info": None,
+            "notes": "单个视频文件"
+        }
+        
+        self.scan_data["folders"].append(folder_info)
+    
     def save_scan_data(self):
         """保存扫描数据"""
         scan_file = self.output_dir / f"scan_{self.timestamp}.json"
@@ -289,9 +390,9 @@ def main():
     )
     
     parser.add_argument(
-        "--no-json",
+        "--json",
         action="store_true",
-        help="不保存 JSON 文件，只生成图片"
+        help="保存 JSON 文件（默认不保存，只生成图片）"
     )
     
     args = parser.parse_args()
@@ -306,7 +407,7 @@ def main():
             args.output,
             max_frames=args.max_frames,
             image_size_kb=args.image_size,
-            save_json=not args.no_json
+            save_json=args.json
         )
     except ValueError as e:
         print(f"❌ {e}")
