@@ -22,5 +22,3 @@ dependencies = [
     "rich>=13.0.0",
 ]
 
-[project.scripts]
-coserv = "coserv.cli:main"
