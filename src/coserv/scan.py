@@ -28,13 +28,18 @@ except ImportError:
 class FolderScanner:
     """文件夹扫描器"""
     
-    def __init__(self, target_dir: str, output_dir: str = None):
+    def __init__(self, target_dir: str, output_dir: str = None, 
+                 max_frames: int = 5, image_size_kb: int = 25, 
+                 save_json: bool = True):
         """
         初始化扫描器
         
         Args:
             target_dir: 目标文件夹目录
             output_dir: 输出目录（默认为视频目录下的 coserv_output）
+            max_frames: 每个文件夹提取的最大图片数量（默认 5）
+            image_size_kb: 图片压缩目标大小（KB，默认 25）
+            save_json: 是否保存 JSON 文件（默认 True）
         """
         self.target_dir = Path(target_dir).resolve()
         
@@ -53,6 +58,11 @@ class FolderScanner:
         # 初始化模块
         self.frame_extractor = FrameExtractor()
         
+        # 配置参数
+        self.max_frames = max_frames
+        self.image_size_kb = image_size_kb
+        self.save_json = save_json
+        
         # 生成时间戳
         self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
@@ -60,6 +70,10 @@ class FolderScanner:
         self.scan_data = {
             "timestamp": self.timestamp,
             "target_dir": str(self.target_dir),
+            "config": {
+                "max_frames": max_frames,
+                "image_size_kb": image_size_kb
+            },
             "folders": []
         }
     
@@ -82,6 +96,7 @@ class FolderScanner:
             print(f"\n⚠ 限制模式：只处理前 {limit} 个文件夹\n")
         
         print(f"\n找到 {len(folders)} 个文件夹")
+        print(f"配置：每个文件夹最多提取 {self.max_frames} 张图片，目标大小 {self.image_size_kb}KB")
         print("开始扫描...")
         
         # 处理每个文件夹
@@ -95,7 +110,8 @@ class FolderScanner:
                     print(f"\n❌ 扫描失败 {folder_path.name}: {e}\n")
         
         # 保存扫描结果
-        self.save_scan_data()
+        if self.save_json:
+            self.save_scan_data()
         
         # 打印摘要
         self.print_summary()
@@ -132,6 +148,9 @@ class FolderScanner:
         if not frames:
             return
         
+        # 限制帧数量
+        frames = frames[:self.max_frames]
+        
         # 保存关键帧
         saved_frames = []
         for i, frame in enumerate(frames):
@@ -146,14 +165,14 @@ class FolderScanner:
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             pil_image = Image.fromarray(rgb_frame)
             
-            # 压缩到目标大小（25KB）
+            # 压缩到目标大小
             quality = 80
             while quality > 10:
                 buffer = io.BytesIO()
                 pil_image.save(buffer, format='WEBP', quality=quality)
                 size_kb = buffer.tell() / 1024
                 
-                if size_kb <= 25 or quality <= 20:
+                if size_kb <= self.image_size_kb or quality <= 20:
                     with open(frame_path, 'wb') as f:
                         f.write(buffer.getvalue())
                     break
@@ -255,6 +274,26 @@ def main():
         help="限制处理的文件夹数量"
     )
     
+    parser.add_argument(
+        "--max-frames",
+        type=int,
+        default=5,
+        help="每个文件夹提取的最大图片数量（默认: 5）"
+    )
+    
+    parser.add_argument(
+        "--image-size",
+        type=int,
+        default=25,
+        help="图片压缩目标大小（KB，默认: 25）"
+    )
+    
+    parser.add_argument(
+        "--no-json",
+        action="store_true",
+        help="不保存 JSON 文件，只生成图片"
+    )
+    
     args = parser.parse_args()
     
     # 打印配置
@@ -262,7 +301,13 @@ def main():
     
     # 创建扫描器
     try:
-        scanner = FolderScanner(args.target_dir, args.output)
+        scanner = FolderScanner(
+            args.target_dir, 
+            args.output,
+            max_frames=args.max_frames,
+            image_size_kb=args.image_size,
+            save_json=not args.no_json
+        )
     except ValueError as e:
         print(f"❌ {e}")
         return

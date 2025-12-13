@@ -100,14 +100,26 @@ def run_scan_interactive():
         console.print("\n[bold cyan]📂 扫描文件夹[/bold cyan]\n")
         target_dir = Prompt.ask("目标文件夹目录路径")
         limit = Prompt.ask("限制处理数量（留空处理全部）", default="")
+        max_frames = Prompt.ask("每个文件夹提取的图片数量", default="5")
+        image_size = Prompt.ask("图片压缩目标大小（KB）", default="25")
+        save_json = Confirm.ask("是否保存 JSON 文件？", default=True)
     else:
         print("\n📂 扫描文件夹")
         target_dir = input("目标文件夹目录路径: ")
         limit = input("限制处理数量（留空处理全部）: ")
+        max_frames = input("每个文件夹提取的图片数量 [5]: ") or "5"
+        image_size = input("图片压缩目标大小（KB）[25]: ") or "25"
+        save_json_input = input("是否保存 JSON 文件？[Y/n]: ").strip().lower()
+        save_json = save_json_input != 'n'
     
     from scan import FolderScanner
     try:
-        scanner = FolderScanner(target_dir)
+        scanner = FolderScanner(
+            target_dir,
+            max_frames=int(max_frames),
+            image_size_kb=int(image_size),
+            save_json = save_json
+        )
         scanner.scan_all_folders(limit=int(limit) if limit else None)
     except Exception as e:
         if RICH_AVAILABLE:
@@ -237,6 +249,9 @@ def main():
     scan_parser.add_argument('target_dir', type=str, help='目标文件夹目录路径')
     scan_parser.add_argument('--output', type=str, default=None, help='输出目录（默认: 视频目录/coserv_output）')
     scan_parser.add_argument('--limit', type=int, default=None, help='限制处理数量')
+    scan_parser.add_argument('--max-frames', type=int, default=5, help='每个文件夹提取的最大图片数量（默认: 5）')
+    scan_parser.add_argument('--image-size', type=int, default=25, help='图片压缩目标大小（KB，默认: 25）')
+    scan_parser.add_argument('--no-json', action='store_true', help='不保存 JSON 文件，只生成图片')
     
     # identify 子命令
     identify_parser = subparsers.add_parser('identify', help='批量识别（新工作流程）')
@@ -283,7 +298,13 @@ def main():
     # === 新工作流程命令 ===
     if args.command == 'scan':
         from scan import FolderScanner
-        scanner = FolderScanner(args.target_dir, args.output)
+        scanner = FolderScanner(
+            args.target_dir, 
+            args.output,
+            max_frames=args.max_frames,
+            image_size_kb=args.image_size,
+            save_json=not args.no_json
+        )
         scanner.scan_all_folders(limit=args.limit)
     
     elif args.command == 'identify':
