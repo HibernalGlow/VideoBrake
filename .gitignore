@@ -10,3 +10,4 @@ wheels/
 .venv
 *.log
 /uv.lock
+src/coserv/test

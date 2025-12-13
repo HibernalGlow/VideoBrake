@@ -1,0 +1,19 @@
+# 视频处理
+opencv-python>=4.8.0
+scenedetect[opencv]>=0.6.2
+
+# 人脸检测
+mediapipe>=0.10.0
+
+# 图像去重
+imagehash>=4.3.1
+Pillow>=10.0.0
+
+# AI 识别
+google-generativeai>=0.3.0
+
+# 环境变量
+python-dotenv>=1.0.0
+
+# 工具库
+tqdm>=4.66.0
