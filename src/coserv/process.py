@@ -28,25 +28,53 @@ except ImportError:
 class BatchProcessor:
     """批量处理器"""
     
-    def __init__(self, scan_file: str, output_dir: str = "output", mode: str = "move"):
+    def __init__(self, scan_file: str, output_dir: str = None, mode: str = "move"):
         """
         初始化处理器
         
         Args:
-            scan_file: 扫描文件路径
-            output_dir: 输出目录
+            scan_file: 扫描文件路径（可以是完整路径或文件名）
+            output_dir: 输出目录（默认从 scan 文件推断）
             mode: 处理模式 (move/copy)
         """
-        self.output_dir = Path(output_dir).resolve()
-        self.scan_file = self.output_dir / scan_file
         self.mode = mode
         
-        if not self.scan_file.exists():
-            raise ValueError(f"扫描文件不存在: {self.scan_file}")
+        # 尝试不同的路径
+        scan_path = Path(scan_file)
+        
+        if scan_path.exists():
+            # 如果是完整路径
+            self.scan_file = scan_path.resolve()
+            if output_dir is None:
+                self.output_dir = self.scan_file.parent
+            else:
+                self.output_dir = Path(output_dir).resolve()
+        else:
+            # 如果只是文件名，尝试在多个位置查找
+            found = False
+            
+            # 1. 当前目录
+            if (Path.cwd() / scan_file).exists():
+                self.scan_file = (Path.cwd() / scan_file).resolve()
+                self.output_dir = Path.cwd() if output_dir is None else Path(output_dir).resolve()
+                found = True
+            # 2. output 目录
+            elif (Path("output") / scan_file).exists():
+                self.scan_file = (Path("output") / scan_file).resolve()
+                self.output_dir = Path("output").resolve() if output_dir is None else Path(output_dir).resolve()
+                found = True
+            
+            if not found:
+                raise ValueError(f"扫描文件不存在: {scan_file}")
         
         # 加载扫描数据
         with open(self.scan_file, 'r', encoding='utf-8') as f:
             self.scan_data = json.load(f)
+        
+        # 如果还没确定输出目录，从 scan 数据推断
+        if output_dir is None and not hasattr(self, 'output_dir'):
+            target_dir = Path(self.scan_data.get("target_dir", "."))
+            self.output_dir = target_dir / "coserv_output"
         
         # 目标目录
         self.target_dir = Path(self.scan_data["target_dir"])

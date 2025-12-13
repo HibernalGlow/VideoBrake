@@ -235,20 +235,20 @@ def main():
     # scan 子命令
     scan_parser = subparsers.add_parser('scan', help='扫描文件夹（新工作流程）')
     scan_parser.add_argument('target_dir', type=str, help='目标文件夹目录路径')
-    scan_parser.add_argument('--output', type=str, default='output', help='输出目录')
+    scan_parser.add_argument('--output', type=str, default=None, help='输出目录（默认: 视频目录/coserv_output）')
     scan_parser.add_argument('--limit', type=int, default=None, help='限制处理数量')
     
     # identify 子命令
     identify_parser = subparsers.add_parser('identify', help='批量识别（新工作流程）')
     identify_parser.add_argument('--scan-file', type=str, required=True, help='扫描文件名')
-    identify_parser.add_argument('--output', type=str, default='output', help='输出目录')
+    identify_parser.add_argument('--output', type=str, default=None, help='输出目录（默认: 从扫描文件推断）')
     identify_parser.add_argument('--no-skip', action='store_true', help='重新识别所有')
     identify_parser.add_argument('--no-auto-save', action='store_true', help='不自动保存')
     
     # process 子命令
     process_parser = subparsers.add_parser('process', help='批量处理（新工作流程）')
     process_parser.add_argument('--scan-file', type=str, required=True, help='扫描文件名')
-    process_parser.add_argument('--output', type=str, default='output', help='输出目录')
+    process_parser.add_argument('--output', type=str, default=None, help='输出目录（默认: 从扫描文件推断）')
     process_parser.add_argument('--mode', type=str, choices=['move', 'copy'], default='move', help='处理模式')
     process_parser.add_argument('--dry-run', action='store_true', help='测试模式')
     

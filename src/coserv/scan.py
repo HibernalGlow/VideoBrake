@@ -28,16 +28,21 @@ except ImportError:
 class FolderScanner:
     """文件夹扫描器"""
     
-    def __init__(self, target_dir: str, output_dir: str = "output"):
+    def __init__(self, target_dir: str, output_dir: str = None):
         """
         初始化扫描器
         
         Args:
             target_dir: 目标文件夹目录
-            output_dir: 输出目录
+            output_dir: 输出目录（默认为视频目录下的 coserv_output）
         """
         self.target_dir = Path(target_dir).resolve()
-        self.output_dir = Path(output_dir).resolve()
+        
+        # 如果未指定输出目录，默认使用视频目录下的 coserv_output
+        if output_dir is None:
+            self.output_dir = self.target_dir / "coserv_output"
+        else:
+            self.output_dir = Path(output_dir).resolve()
         
         if not self.target_dir.exists():
             raise ValueError(f"目标目录不存在: {target_dir}")
@@ -239,8 +244,8 @@ def main():
     parser.add_argument(
         "--output",
         type=str,
-        default="output",
-        help="输出目录（默认: output）"
+        default=None,
+        help="输出目录（默认: 视频目录/coserv_output）"
     )
     
     parser.add_argument(
