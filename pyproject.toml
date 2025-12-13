@@ -39,11 +39,8 @@ dev = [
 "Bug Tracker" = "https://github.com/HibernalGlow/brakev/issues"
 
 [project.scripts]
-brakev = "brakev.__main__:main"
-bkv = "brakev.__main__:main"  # 添加别名
 bitv = "bitv.__main__:main"
 formatv = "formatv.__main__:main"
-engingv = "engingv.__main__:main"
 audiov = "audiov.__main__:main"
 coserv = "coserv.cli:main"
 
@@ -53,7 +50,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["brakev", "bitv", "formatv", "engingv"]
+packages = ["audiov", "bitv", "coserv", "formatv"]
 
 [tool.black]
 line-length = 88
