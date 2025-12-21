@@ -8,14 +8,18 @@ from rich.console import Console
 
 # 导入配置处理
 from .config import get_video_extensions, get_prefix_list, get_prefix_by_name, get_blacklist
+# 导入快速扫描器
+from .file_scanner import FastVideoScanner, find_video_files_fast
+
 # 设置控制台对象
 console = Console()
-def find_video_files(directory: str) -> Dict[str, Any]:
+def find_video_files(directory: str, use_fast: bool = True) -> Dict[str, Any]:
     """
     在指定目录查找视频文件，区分普通视频文件、.nov文件和带各类前缀的文件
     
     Args:
         directory: 目录路径
+        use_fast: 是否使用快速扫描器 (默认启用)
         
     Returns:
         Dict[str, Any]: 包含分类后文件列表的字典，格式如下：
@@ -29,6 +33,11 @@ def find_video_files(directory: str) -> Dict[str, Any]:
             }
         }
     """
+    # 使用快速扫描器
+    if use_fast:
+        return find_video_files_fast(directory, show_progress=True)
+    
+    # 原始扫描逻辑 (作为回退)
     # 从配置加载视频格式和前缀
     video_extensions = tuple(get_video_extensions())
     prefixes = get_prefix_list()
